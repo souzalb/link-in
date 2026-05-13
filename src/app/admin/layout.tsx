@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Ticket, LogOut, Calendar, Users, Settings } from "lucide-react";
@@ -9,6 +9,18 @@ import { motion } from "framer-motion";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserEmail(user.email ?? null);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleSignOut = async () => {
     const supabase = createClient();
@@ -58,13 +70,24 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
         
-        <div className="p-4 border-t border-white/10 m-4 bg-white/5 rounded-2xl">
+        <div className="p-4 border-t border-white/10 m-4 bg-white/5 rounded-2xl flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+              <span className="text-primary font-bold text-sm">
+                {userEmail ? userEmail.charAt(0).toUpperCase() : "A"}
+              </span>
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-semibold text-white truncate">Administrador</span>
+              <span className="text-xs text-zinc-400 truncate w-28">{userEmail || "Carregando..."}</span>
+            </div>
+          </div>
           <button 
             onClick={handleSignOut}
-            className="flex w-full items-center gap-3 px-4 py-3 text-red-400 hover:bg-red-500/10 font-medium rounded-xl transition-all duration-200"
+            title="Sair da plataforma"
+            className="p-2.5 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 shrink-0"
           >
             <LogOut className="w-5 h-5" />
-            Sair
           </button>
         </div>
       </aside>

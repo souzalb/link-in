@@ -48,6 +48,7 @@ export function StudentDashboard({
   // Modal states
   const [ticketToRevoke, setTicketToRevoke] = useState<{ticketId: string, allocationId: string} | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
+  const [successModal, setSuccessModal] = useState<string | null>(null);
 
   const handleIssue = async (formData: FormData) => {
     setLoading(true);
@@ -70,32 +71,32 @@ export function StudentDashboard({
         {/* Allocations Overview */}
         <div className="grid gap-6 md:grid-cols-2">
           {allocations.map((alloc) => (
-            <Card key={alloc.id} className="border-primary/20 shadow-md">
-              <CardHeader className="bg-primary/5 pb-4">
-                <CardTitle className="flex justify-between items-center text-lg">
+            <Card key={alloc.id} className="glass border-0 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all flex flex-col">
+              <CardHeader className="bg-white/5 border-b border-white/5 pb-6">
+                <CardTitle className="flex justify-between items-center text-xl text-white">
                   <span className="line-clamp-1">{alloc.events.title}</span>
-                  <span className="text-sm font-normal bg-white px-3 py-1 rounded-full text-primary border border-primary/20">
+                  <span className="text-xs font-semibold bg-primary/20 px-3 py-1.5 rounded-full text-primary border border-primary/30">
                     {alloc.used_quota} / {alloc.total_quota} Usados
                   </span>
                 </CardTitle>
-                <CardDescription>{new Date(alloc.events.date).toLocaleDateString()}</CardDescription>
+                <CardDescription className="text-zinc-400 mt-2">{new Date(alloc.events.date).toLocaleDateString()}</CardDescription>
               </CardHeader>
-              <CardContent className="pt-6">
+              <CardContent className="p-6 pt-6 mt-auto">
                 {alloc.used_quota < alloc.total_quota ? (
-                  <form action={handleIssue} className="space-y-4">
-                    {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
+                  <form action={handleIssue} className="space-y-5">
+                    {error && <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-400"><AlertDescription>{error}</AlertDescription></Alert>}
                     <input type="hidden" name="event_id" value={alloc.events.id} />
                     <input type="hidden" name="allocation_id" value={alloc.id} />
                     
                     <div className="space-y-2">
-                      <Label htmlFor="guest_name">Nome do Convidado</Label>
-                      <Input id="guest_name" name="guest_name" required placeholder="João da Silva" />
+                      <Label htmlFor="guest_name" className="text-zinc-300 ml-1">Nome do Convidado</Label>
+                      <Input id="guest_name" name="guest_name" required placeholder="João da Silva" className="bg-black/40 border-white/10 text-white rounded-xl h-12" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="guest_email">E-mail do Convidado</Label>
-                      <Input id="guest_email" name="guest_email" type="email" required placeholder="joao@exemplo.com.br" />
+                      <Label htmlFor="guest_email" className="text-zinc-300 ml-1">E-mail do Convidado</Label>
+                      <Input id="guest_email" name="guest_email" type="email" required placeholder="joao@exemplo.com.br" className="bg-black/40 border-white/10 text-white rounded-xl h-12" />
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button type="submit" className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold mt-2" disabled={loading}>
                       <Send className="w-4 h-4 mr-2" />
                       Emitir Ingresso
                     </Button>
@@ -112,48 +113,61 @@ export function StudentDashboard({
         </div>
 
         {/* Issued Tickets */}
-        <h2 className="text-2xl font-bold tracking-tight mt-12 mb-4">Seus Ingressos Emitidos</h2>
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <h2 className="text-2xl font-bold tracking-tight text-white mt-12 mb-6">Seus Ingressos Emitidos</h2>
+        <div className="glass rounded-[2rem] border-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-zinc-50 border-b text-zinc-500 uppercase text-xs">
+              <thead className="bg-white/5 border-b border-white/5 text-zinc-400 uppercase text-xs tracking-wider">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Convidado</th>
-                  <th className="px-6 py-4 font-medium">Evento</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium text-right">Ações</th>
+                  <th className="px-6 py-5 font-medium">Convidado</th>
+                  <th className="px-6 py-5 font-medium">Evento</th>
+                  <th className="px-6 py-5 font-medium">Status</th>
+                  <th className="px-6 py-5 font-medium text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
+              <tbody className="divide-y divide-white/5">
                 {tickets.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">Nenhum ingresso emitido ainda.</td>
+                    <td colSpan={4} className="px-6 py-12 text-center text-zinc-500">Nenhum ingresso emitido ainda.</td>
                   </tr>
                 )}
                 {tickets.map((ticket) => {
                   const allocation = allocations.find(a => a.events.title === ticket.events.title);
                   return (
-                    <tr key={ticket.id} className="hover:bg-zinc-50/50">
+                    <tr key={ticket.id} className="hover:bg-white/5 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-medium text-zinc-900">{ticket.guest_name}</div>
-                        <div className="text-zinc-500">{ticket.guest_email}</div>
+                        <div className="font-medium text-white">{ticket.guest_name}</div>
+                        <div className="text-zinc-400 mt-1">{ticket.guest_email}</div>
                       </td>
-                      <td className="px-6 py-4 text-zinc-700">{ticket.events.title}</td>
+                      <td className="px-6 py-4 text-zinc-300">{ticket.events.title}</td>
                       <td className="px-6 py-4">
-                        {ticket.status === 'issued' && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700"><TicketIcon className="w-3.5 h-3.5"/> Emitido</span>}
-                        {ticket.status === 'checked_in' && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700"><CheckCircle className="w-3.5 h-3.5"/> Validado</span>}
-                        {ticket.status === 'revoked' && <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700"><XCircle className="w-3.5 h-3.5"/> Cancelado</span>}
+                        {ticket.status === 'issued' && <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30"><TicketIcon className="w-3.5 h-3.5"/> Emitido</span>}
+                        {ticket.status === 'checked_in' && <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30"><CheckCircle className="w-3.5 h-3.5"/> Validado</span>}
+                        {ticket.status === 'revoked' && <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30"><XCircle className="w-3.5 h-3.5"/> Cancelado</span>}
                       </td>
                       <td className="px-6 py-4 text-right">
                         {ticket.status === 'issued' && allocation && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50" 
-                            onClick={() => setTicketToRevoke({ ticketId: ticket.id, allocationId: allocation.id })}
-                          >
-                            Cancelar
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-primary hover:text-primary hover:bg-primary/10 rounded-xl" 
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/ticket/${ticket.id}`);
+                                setSuccessModal("Link do ingresso copiado com sucesso! Agora é só colar no WhatsApp do seu convidado.");
+                              }}
+                            >
+                              Copiar Link
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl" 
+                              onClick={() => setTicketToRevoke({ ticketId: ticket.id, allocationId: allocation.id })}
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -167,16 +181,16 @@ export function StudentDashboard({
 
       {/* Revoke Confirmation Modal */}
       <AlertDialog open={!!ticketToRevoke} onOpenChange={(open) => !open && setTicketToRevoke(null)}>
-        <AlertDialogContent className="rounded-3xl">
+        <AlertDialogContent className="glass border-white/10 rounded-3xl p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancelar Ingresso</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-2xl text-white">Cancelar Ingresso</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
               Tem certeza que deseja cancelar este ingresso? O convite será invalidado e o link enviado deixará de funcionar. Sua cota será reembolsada.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Voltar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRevoke} className="bg-red-600 hover:bg-red-700 text-white rounded-xl">
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="h-11 px-6 rounded-xl border-white/10 bg-transparent text-white hover:bg-white/10">Voltar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRevoke} className="h-11 px-6 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/40 hover:text-white rounded-xl">
               Sim, Cancelar
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -185,15 +199,32 @@ export function StudentDashboard({
 
       {/* Error Modal */}
       <AlertDialog open={!!errorModal} onOpenChange={(open) => !open && setErrorModal(null)}>
-        <AlertDialogContent className="rounded-3xl">
+        <AlertDialogContent className="glass border-white/10 rounded-3xl p-8">
           <AlertDialogHeader>
-            <AlertDialogTitle>Ops, ocorreu um erro</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-2xl text-white">Ops, ocorreu um erro</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
               {errorModal}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-primary hover:bg-primary/90 text-white rounded-xl border-0">Entendi</AlertDialogCancel>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="h-11 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl border-0">Entendi</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Success Modal */}
+      <AlertDialog open={!!successModal} onOpenChange={(open) => !open && setSuccessModal(null)}>
+        <AlertDialogContent className="glass border-white/10 rounded-3xl p-8">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-white flex items-center gap-2">
+              <CheckCircle className="w-6 h-6 text-green-400" /> Sucesso!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              {successModal}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="h-11 px-6 bg-white/10 hover:bg-white/20 text-white rounded-xl border-0">Fechar</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

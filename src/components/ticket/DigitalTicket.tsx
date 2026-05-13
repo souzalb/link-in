@@ -28,7 +28,7 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
       {/* Decorative shadows */}
       <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-90 group-hover:bg-primary/30 transition-colors duration-500"></div>
       
-      <Card className="relative w-full overflow-hidden border-0 shadow-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 text-white rounded-[2rem] h-[600px] flex flex-col">
+      <Card className="relative w-full overflow-hidden border-0 shadow-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 text-white rounded-[2rem] flex flex-col pb-6">
         {/* Header / Banner */}
         <div className="h-48 bg-zinc-800 relative w-full shrink-0">
           {ticket.events.banner_url ? (
@@ -52,7 +52,7 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
           <div className="flex items-start gap-3 text-zinc-300">
             <User className="w-5 h-5 shrink-0 text-primary" />
             <div>
-              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Guest</p>
+              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Convidado</p>
               <p className="font-medium text-white">{ticket.guest_name}</p>
             </div>
           </div>
@@ -60,7 +60,7 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
           <div className="flex items-start gap-3 text-zinc-300">
             <Calendar className="w-5 h-5 shrink-0 text-primary" />
             <div>
-              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Date & Time</p>
+              <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Data e Hora</p>
               <p className="font-medium text-white">{new Date(ticket.events.date).toLocaleString('pt-BR')}</p>
             </div>
           </div>
@@ -69,7 +69,7 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
             <div className="flex items-start gap-3 text-zinc-300">
               <MapPin className="w-5 h-5 shrink-0 text-primary" />
               <div>
-                <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Location</p>
+                <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Local</p>
                 <p className="font-medium text-white line-clamp-2">{ticket.events.location}</p>
               </div>
             </div>

@@ -76,7 +76,7 @@ export default function CreateEventPage() {
             <div className="space-y-2 pt-2">
               <Label htmlFor="banner_file" className="text-zinc-300 ml-1">Capa do Evento (Foto)</Label>
               <div className="flex items-center gap-4">
-                <div className={`relative flex items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl overflow-hidden transition-colors ${preview ? 'border-primary/50 bg-primary/5' : 'border-white/10 bg-black/20 hover:bg-black/40 hover:border-white/20'}`}>
+                <div className={`relative flex items-center justify-center w-full h-48 border-2 border-dashed rounded-2xl overflow-hidden transition-colors ${preview ? 'border-primary/50 bg-primary/5' : 'border-white/10 bg-black/20 hover:bg-black/40 hover:border-white/20'}`}>
                   {preview ? (
                     <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                   ) : (

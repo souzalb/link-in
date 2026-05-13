@@ -82,9 +82,28 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   
+  button, [role="button"], select, a {
+    cursor: pointer;
+  }
+  
   /* Glassmorphism utilities */
   .glass {
     @apply bg-card backdrop-blur-2xl border border-white/10 shadow-2xl;
+  }
+
+  /* Fix for native date/time input calendar icons on dark backgrounds */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: opacity(0.7);
+    cursor: pointer;
+  }
+
+  /* Force native popups (calendar/dropdowns) to use dark theme when input is dark */
+  input[class*="bg-black/40"], 
+  select[class*="bg-black/40"], 
+  textarea[class*="bg-black/40"] {
+    color-scheme: dark;
   }
 }
 

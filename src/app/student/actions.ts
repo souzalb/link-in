@@ -39,11 +39,22 @@ export async function issueTicket(formData: FormData) {
 
   if (ticketError) return { error: "Failed to issue ticket." };
 
-  // 3. Update allocation
-  await supabase
+  // 3. Update allocation (bypassing RLS with Service Role Key)
+  const { createClient: createSupabaseClient } = await import("@supabase/supabase-js");
+  const adminClient = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error: updateError } = await adminClient
     .from("allocations")
     .update({ used_quota: allocation.used_quota + 1 })
     .eq("id", allocationId);
+
+  if (updateError) {
+    console.error("Failed to update allocation quota:", updateError);
+    return { error: "Erro ao atualizar a cota do aluno." };
+  }
 
   revalidatePath("/student");
   return { success: true };
@@ -77,7 +88,7 @@ export async function revokeTicket(ticketId: string, allocationId: string) {
 
   if (updateError) return { error: "Failed to revoke ticket" };
 
-  // 3. Update allocation (return the quota)
+  // 3. Update allocation (return the quota) bypassing RLS
   const { data: allocation } = await supabase
     .from("allocations")
     .select("used_quota")
@@ -85,7 +96,13 @@ export async function revokeTicket(ticketId: string, allocationId: string) {
     .single();
 
   if (allocation && allocation.used_quota > 0) {
-    await supabase
+    const { createClient: createSupabaseClient } = await import("@supabase/supabase-js");
+    const adminClient = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    await adminClient
       .from("allocations")
       .update({ used_quota: allocation.used_quota - 1 })
       .eq("id", allocationId);

@@ -141,7 +141,7 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
           </Button>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="glass border-white/10 rounded-3xl max-w-md">
+            <DialogContent className="glass border-white/10 rounded-3xl max-w-md p-8">
               <DialogHeader>
                 <DialogTitle className="text-2xl text-white">Nova Cota</DialogTitle>
                 <DialogDescription className="text-zinc-400">

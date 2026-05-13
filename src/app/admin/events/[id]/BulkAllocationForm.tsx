@@ -47,7 +47,7 @@ export function BulkAllocationForm({ eventId }: { eventId: string }) {
           value={emails}
           onChange={(e) => setEmails(e.target.value)}
           placeholder="aluno1@universidade.edu.br&#10;aluno2@universidade.edu.br" 
-          className="min-h-[120px] bg-black/40 border-white/10 text-white placeholder:text-zinc-600 focus-visible:ring-primary/50"
+          className="min-h-[120px] bg-black/40 border-white/10 text-white placeholder:text-zinc-600 focus-visible:ring-primary/50 rounded-xl"
         />
       </div>
 
@@ -60,11 +60,11 @@ export function BulkAllocationForm({ eventId }: { eventId: string }) {
           required 
           value={quota}
           onChange={(e) => setQuota(parseInt(e.target.value) || 1)}
-          className="bg-black/40 border-white/10 text-white h-12 focus-visible:ring-primary/50"
+          className="bg-black/40 border-white/10 text-white h-12 rounded-xl focus-visible:ring-primary/50"
         />
       </div>
 
-      <Button type="submit" disabled={loading || emails.trim().length === 0} className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-semibold">
+      <Button type="submit" disabled={loading || emails.trim().length === 0} className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold">
         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Users className="w-5 h-5 mr-2" /> Distribuir Cotas</>}
       </Button>
     </form>
