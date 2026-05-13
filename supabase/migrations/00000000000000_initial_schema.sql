@@ -83,7 +83,7 @@ CREATE POLICY "Admins can manage allocations" ON public.allocations
 
 CREATE POLICY "Students can read their own allocations" ON public.allocations
     FOR SELECT USING (
-      student_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+      student_email = (auth.jwt() ->> 'email')
     );
 
 -- tickets: admins manage, students can manage their own allocations, guests can read their own
@@ -92,12 +92,12 @@ CREATE POLICY "Admins can manage tickets" ON public.tickets
 
 CREATE POLICY "Students can manage tickets they allocated" ON public.tickets
     FOR ALL USING (
-      allocated_by = (SELECT email FROM auth.users WHERE id = auth.uid())
+      allocated_by = (auth.jwt() ->> 'email')
     );
 
 CREATE POLICY "Guests can view their own ticket" ON public.tickets
     FOR SELECT USING (
-      guest_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+      guest_email = (auth.jwt() ->> 'email')
     );
 
 CREATE POLICY "Scanners can read and update tickets" ON public.tickets
