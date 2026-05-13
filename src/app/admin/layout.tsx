@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const navItems = [
     { href: "/admin/events", icon: Calendar, label: "Eventos" },
-    { href: "/admin/allocations", icon: Users, label: "Distribuição de Cotas" },
+    { href: "/admin/dashboard", icon: Users, label: "Dashboard" },
   ];
 
   return (
