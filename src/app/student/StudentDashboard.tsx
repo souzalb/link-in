@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { issueTicket, revokeTicket } from "./actions";
+import { issueTicket, revokeTicket, returnQuota } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Ticket as TicketIcon, Send, XCircle, CheckCircle } from "lucide-react";
+import { Ticket as TicketIcon, Send, XCircle, CheckCircle, RotateCcw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 import {
@@ -47,6 +47,7 @@ export function StudentDashboard({
 
   // Modal states
   const [ticketToRevoke, setTicketToRevoke] = useState<{ ticketId: string, allocationId: string } | null>(null);
+  const [allocationToReturn, setAllocationToReturn] = useState<string | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState<string | null>(null);
 
@@ -65,6 +66,19 @@ export function StudentDashboard({
     setTicketToRevoke(null);
   };
 
+  const handleReturnQuota = async () => {
+    if (!allocationToReturn) return;
+    setLoading(true);
+    const res = await returnQuota(allocationToReturn);
+    if (res?.error) {
+      setErrorModal(res.error);
+    } else {
+      setSuccessModal("Cota devolvida com sucesso!");
+    }
+    setAllocationToReturn(null);
+    setLoading(false);
+  };
+
   return (
     <>
       <div className="space-y-8">
@@ -79,7 +93,18 @@ export function StudentDashboard({
                     {alloc.used_quota} / {alloc.total_quota} Usados
                   </span>
                 </CardTitle>
-                <CardDescription className="text-zinc-400 mt-2">{new Date(alloc.events.date).toLocaleDateString()}</CardDescription>
+                <div className="flex justify-between items-center mt-2">
+                  <CardDescription className="text-zinc-400">{new Date(alloc.events.date).toLocaleDateString()}</CardDescription>
+                  {alloc.used_quota < alloc.total_quota && (
+                    <button
+                      onClick={() => setAllocationToReturn(alloc.id)}
+                      className="text-xs text-zinc-400 hover:text-white flex items-center gap-1 transition-colors"
+                      title="Devolver uma cota de convite"
+                    >
+                      <RotateCcw className="w-3 h-3" /> Devolver Convite
+                    </button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="p-6 pt-6 mt-auto">
                 {alloc.used_quota < alloc.total_quota ? (
@@ -203,6 +228,24 @@ export function StudentDashboard({
             <AlertDialogCancel className="h-11 px-6 rounded-xl border-white/10 bg-transparent text-white hover:bg-white/10">Voltar</AlertDialogCancel>
             <AlertDialogAction onClick={handleRevoke} className="h-11 px-6 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/40 hover:text-white rounded-xl">
               Sim, Cancelar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Return Quota Confirmation Modal */}
+      <AlertDialog open={!!allocationToReturn} onOpenChange={(open) => !open && setAllocationToReturn(null)}>
+        <AlertDialogContent className="glass border-white/10 rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-white">Devolver Convite</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400">
+              Tem certeza que deseja devolver este convite? Você terá um convite a menos para este evento e não poderá emitir ingressos no lugar dele.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="h-11 px-6 rounded-xl border-white/10 bg-transparent text-white hover:bg-white/10" disabled={loading}>Voltar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReturnQuota} disabled={loading} className="h-11 px-6 bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/40 hover:text-white rounded-xl">
+              {loading ? "Devolvendo..." : "Sim, Devolver"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

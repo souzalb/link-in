@@ -128,6 +128,11 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
                 <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
                   <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: event.estimated_graduates > 0 ? `${Math.min(Math.round((totalAllocatedQuota / (event.estimated_graduates * 3)) * 100), 100)}%` : '0%' }}></div>
                 </div>
+                {/* Saldo de Convites */}
+                <div className="mt-3 flex items-center gap-2 text-sm bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg border border-blue-500/20">
+                  <Ticket className="w-4 h-4" />
+                  <span><strong>{(event.estimated_graduates * 3) - totalAllocatedQuota}</strong> convites disponíveis para distribuir</span>
+                </div>
               </div>
 
               {/* Emissão (Ingressos gerados) */}

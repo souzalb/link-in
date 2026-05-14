@@ -27,6 +27,38 @@ export async function bulkAllocate(eventId: string, emailsText: string, quota: n
 
   if (emails.length === 0) return { error: "No valid emails found." };
 
+  // Fetch event capacity and current allocations
+  const { data: event } = await supabase
+    .from("events")
+    .select("estimated_graduates, allocations(student_email, total_quota, used_quota)")
+    .eq("id", eventId)
+    .single();
+
+  if (!event) return { error: "Evento não encontrado." };
+
+  const maxQuota = event.estimated_graduates * 3;
+  const currentAllocations = event.allocations || [];
+  const currentTotalQuota = currentAllocations.reduce((acc: number, alloc: any) => acc + alloc.total_quota, 0);
+
+  // Calculate net change
+  let netQuotaChange = 0;
+  for (const email of emails) {
+    const existing = currentAllocations.find((a: any) => a.student_email === email);
+    if (existing) {
+      if (quota < existing.used_quota) {
+        return { error: `Não é possível reduzir a cota de ${email} para ${quota}, pois ele já utilizou ${existing.used_quota}.` };
+      }
+      netQuotaChange += (quota - existing.total_quota);
+    } else {
+      netQuotaChange += quota;
+    }
+  }
+
+  const availableQuota = maxQuota - currentTotalQuota;
+  if (netQuotaChange > availableQuota) {
+    return { error: `Limite excedido! Você está tentando alocar mais ${netQuotaChange} convite(s), mas só há ${availableQuota} disponível(is).` };
+  }
+
   let successCount = 0;
   let errorCount = 0;
 
