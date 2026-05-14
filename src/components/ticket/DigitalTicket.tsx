@@ -23,23 +23,37 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
   const isUsed = ticket.status === "checked_in";
   const isRevoked = ticket.status === "revoked";
 
+  const topBg = {
+    background: 'radial-gradient(circle at 0 100%, transparent 16px, #18181b 16px) top left / 51% 100% no-repeat, radial-gradient(circle at 100% 100%, transparent 16px, #18181b 16px) top right / 51% 100% no-repeat'
+  };
+
+  const bottomBg = {
+    background: 'radial-gradient(circle at 0 0, transparent 16px, #09090b 16px) bottom left / 51% 100% no-repeat, radial-gradient(circle at 100% 0, transparent 16px, #09090b 16px) bottom right / 51% 100% no-repeat'
+  };
+
   return (
     <div className="w-full max-w-sm mx-auto relative group">
       {/* Decorative shadows */}
-      <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-90 group-hover:bg-primary/30 transition-colors duration-500"></div>
-      
-      <Card className="relative w-full overflow-hidden border-0 shadow-2xl bg-gradient-to-b from-zinc-900 to-zinc-950 text-white rounded-[2rem] flex flex-col pb-6">
-        {/* Header / Banner */}
+      <div className="absolute inset-0 bg-primary/30 blur-[80px] rounded-full scale-100 group-hover:bg-primary/40 transition-colors duration-500"></div>
+
+      <div className="relative w-full drop-shadow-[0_0_20px_rgba(var(--primary),0.3)] flex flex-col">
+        
+        {/* Top Piece */}
+        <div 
+          className="w-full text-white rounded-t-[2.5rem] flex flex-col overflow-hidden relative"
+          style={topBg}
+        >
+          {/* Header / Banner */}
         <div className="h-48 bg-zinc-800 relative w-full shrink-0">
           {ticket.events.banner_url ? (
             <img src={ticket.events.banner_url} alt="Event Banner" className="w-full h-full object-cover opacity-80" />
           ) : (
             <div className="w-full h-full bg-gradient-to-tr from-primary/80 to-primary/40 flex items-center justify-center">
-               <Ticket className="w-16 h-16 text-white/40" />
+              <Ticket className="w-16 h-16 text-white/40" />
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 to-transparent"></div>
-          
+
           <div className="absolute bottom-4 left-6 right-6">
             <h2 className="text-2xl font-bold leading-tight line-clamp-2 drop-shadow-md">
               {ticket.events.title}
@@ -56,7 +70,7 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
               <p className="font-medium text-white">{ticket.guest_name}</p>
             </div>
           </div>
-          
+
           <div className="flex items-start gap-3 text-zinc-300">
             <Calendar className="w-5 h-5 shrink-0 text-primary" />
             <div>
@@ -76,41 +90,53 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
           )}
         </div>
 
-        {/* Dotted separator */}
-        <div className="relative h-8 flex items-center justify-between w-full px-0 shrink-0">
-          <div className="w-6 h-6 rounded-full bg-zinc-50 absolute -left-3 shadow-inner"></div>
-          <div className="flex-1 border-t-2 border-dashed border-zinc-700 mx-4"></div>
-          <div className="w-6 h-6 rounded-full bg-zinc-50 absolute -right-3 shadow-inner"></div>
+        {/* Dotted separator (Bottom of Top Piece) */}
+        <div className="relative h-4 flex items-end justify-between w-full px-0 shrink-0">
+          <div className="flex-1 border-t-2 border-dashed border-zinc-700/80 mx-5 relative">
+             <div className="absolute inset-0 -top-2 h-4 bg-primary/20 blur-xl pointer-events-none"></div>
+          </div>
+        </div>
+        </div>
+
+        {/* Bottom Piece */}
+        <div 
+          className="w-full text-white rounded-b-[2.5rem] flex flex-col pb-6 relative"
+          style={bottomBg}
+        >
+        {/* Dotted separator (Top of Bottom Piece for symmetry) */}
+        <div className="relative h-4 flex items-start justify-between w-full px-0 shrink-0">
+          <div className="flex-1 border-t-2 border-dashed border-zinc-700/80 mx-5 relative"></div>
         </div>
 
         {/* QR Code Section */}
         <div className="px-6 pb-8 pt-4 flex flex-col items-center justify-center shrink-0">
-          <div className="bg-white p-4 rounded-xl shadow-inner relative">
-             {isUsed && (
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl text-green-600">
-                   <CheckCircle className="w-12 h-12 mb-2" />
-                   <span className="font-bold">UTILIZADO</span>
-                </div>
-             )}
-             {isRevoked && (
-                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl text-red-600">
-                   <span className="font-bold text-xl uppercase text-center leading-tight">Cancelado</span>
-                </div>
-             )}
-             <QRCodeCanvas
-                value={ticket.qr_token}
-                size={180}
-                bgColor="#ffffff"
-                fgColor="#000000"
-                level="Q"
-                className={isUsed || isRevoked ? "opacity-30" : ""}
-             />
+          <div className="bg-white p-4 rounded-2xl shadow-[0_0_40px_-5px_rgba(var(--primary),0.8)] relative">
+            {isUsed && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl text-green-600">
+                <CheckCircle className="w-12 h-12 mb-2" />
+                <span className="font-bold">UTILIZADO</span>
+              </div>
+            )}
+            {isRevoked && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-xl text-red-600">
+                <span className="font-bold text-xl uppercase text-center leading-tight">Cancelado</span>
+              </div>
+            )}
+            <QRCodeCanvas
+              value={ticket.qr_token}
+              size={180}
+              bgColor="#ffffff"
+              fgColor="#000000"
+              level="Q"
+              className={isUsed || isRevoked ? "opacity-30" : ""}
+            />
           </div>
           <p className="mt-4 text-xs font-mono text-zinc-500 text-center uppercase tracking-[0.2em]">
-             {ticket.qr_token.split('-')[0]}
+            {ticket.qr_token.split('-')[0]}
           </p>
         </div>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

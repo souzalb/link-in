@@ -193,7 +193,25 @@ export function StudentDashboard({
                         <button
                           className="h-7 px-3 text-xs font-medium text-zinc-400 hover:text-primary hover:bg-primary/10 rounded-lg border border-white/8 hover:border-primary/20 transition-all"
                           onClick={() => {
-                            navigator.clipboard.writeText(`${window.location.origin}/ticket/${ticket.id}`);
+                            const url = `${window.location.origin}/ticket/${ticket.id}`;
+                            if (navigator.clipboard && window.isSecureContext) {
+                              navigator.clipboard.writeText(url);
+                            } else {
+                              const textArea = document.createElement("textarea");
+                              textArea.value = url;
+                              textArea.style.position = "fixed";
+                              textArea.style.left = "-999999px";
+                              textArea.style.top = "-999999px";
+                              document.body.appendChild(textArea);
+                              textArea.focus();
+                              textArea.select();
+                              try {
+                                document.execCommand('copy');
+                              } catch (err) {
+                                console.error('Fallback copy failed', err);
+                              }
+                              document.body.removeChild(textArea);
+                            }
                             setSuccessModal("Link copiado! Cole no WhatsApp do seu convidado.");
                           }}
                         >

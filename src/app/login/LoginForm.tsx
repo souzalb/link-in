@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Ticket, User, ShieldCheck } from "lucide-react";
+import { Ticket, User, ShieldCheck, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export function LoginForm() {
@@ -68,7 +68,7 @@ export function LoginForm() {
           </button>
         </div>
 
-        <form action={handleSubmit}>
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(new FormData(e.currentTarget)); }}>
           <div className="space-y-5">
             <AnimatePresence mode="wait">
               {error && (
@@ -117,11 +117,22 @@ export function LoginForm() {
             </AnimatePresence>
 
             <Button 
-              className="w-full h-14 text-base font-semibold rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)] transition-all duration-300" 
+              className={`w-full h-14 text-base font-semibold rounded-2xl transition-all duration-300 ${
+                loading 
+                  ? "bg-primary/70 text-white cursor-not-allowed" 
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)]"
+              }`}
               type="submit" 
               disabled={loading}
             >
-              {loading ? "Entrando..." : "Acessar Plataforma"}
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                "Acessar Plataforma"
+              )}
             </Button>
           </div>
         </form>

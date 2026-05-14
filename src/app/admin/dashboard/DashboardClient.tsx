@@ -170,8 +170,8 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="total_quota" className="text-zinc-300">Cota Total de Ingressos</Label>
-                  <Input id="total_quota" name="total_quota" type="number" min={1} required defaultValue={10} className="h-12 bg-black/40 border-white/10 text-white rounded-xl px-4" />
+                  <Label htmlFor="total_quota" className="text-zinc-300">Quantidade de convites a adicionar</Label>
+                  <Input id="total_quota" name="total_quota" type="number" min={1} required defaultValue={3} className="h-12 bg-black/40 border-white/10 text-white rounded-xl px-4" />
                 </div>
 
                 <Button type="submit" className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold mt-6" disabled={loading}>
