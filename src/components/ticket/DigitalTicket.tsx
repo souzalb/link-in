@@ -1,7 +1,7 @@
 "use client";
 
 import { QRCodeCanvas } from "qrcode.react";
-import { Ticket, Calendar, MapPin, User, CheckCircle } from "lucide-react";
+import { Ticket, Calendar, MapPin, User, CheckCircle, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface DigitalTicketProps {
@@ -84,7 +84,20 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
               <MapPin className="w-5 h-5 shrink-0 text-primary" />
               <div>
                 <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Local</p>
-                <p className="font-medium text-white line-clamp-2">{ticket.events.location}</p>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ticket.events.location)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group/link flex flex-col items-start font-medium text-white line-clamp-2 hover:text-primary transition-colors"
+                >
+                  <span className="flex items-center gap-1.5 underline decoration-white/20 underline-offset-4 group-hover/link:decoration-primary/50">
+                    {ticket.events.location}
+                    <ExternalLink className="w-3.5 h-3.5 opacity-50 group-hover/link:opacity-100 shrink-0" />
+                  </span>
+                  <span className="text-[10px] text-zinc-500 mt-1 uppercase tracking-wider group-hover/link:text-primary/70 font-semibold flex items-center">
+                    Abrir no Mapa
+                  </span>
+                </a>
               </div>
             </div>
           )}
