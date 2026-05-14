@@ -32,9 +32,9 @@ export default async function AdminEventsPage() {
             <Link href="/admin/events/new" className={buttonVariants({ variant: "outline", className: "h-11 px-6 rounded-xl border-white/10 text-white hover:bg-white/10" })}>Criar Evento</Link>
           </div>
         )}
-        
+
         {events?.map((event) => (
-          <Card key={event.id} className="overflow-hidden group glass border-0 rounded-3xl hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-white/[0.04] transition-all duration-300 flex flex-col">
+          <Card key={event.id} className="p-0 overflow-hidden group glass border-0 rounded-3xl hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-white/[0.04] transition-all duration-300 flex flex-col">
             <div className="h-48 bg-black/40 relative">
               {event.banner_url ? (
                 <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -44,7 +44,7 @@ export default async function AdminEventsPage() {
                 </div>
               )}
             </div>
-            <CardHeader className="p-6">
+            <CardHeader className="px-6 py-2">
               <CardTitle className="text-xl line-clamp-1 text-white">{event.title}</CardTitle>
               <CardDescription className="flex items-center gap-1.5 mt-2 text-zinc-400">
                 <Calendar className="w-4 h-4" />
@@ -59,7 +59,7 @@ export default async function AdminEventsPage() {
             </CardHeader>
             <CardContent className="p-6 pt-0 mt-auto">
               <Link href={`/admin/events/${event.id}`} className={buttonVariants({ variant: "secondary", className: "w-full h-11 rounded-xl bg-white/10 hover:bg-white/20 text-white border-0 transition-colors" })}>
-                 Gerenciar Evento
+                Gerenciar Evento
               </Link>
             </CardContent>
           </Card>

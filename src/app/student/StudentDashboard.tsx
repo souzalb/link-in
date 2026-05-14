@@ -44,9 +44,9 @@ export function StudentDashboard({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Modal states
-  const [ticketToRevoke, setTicketToRevoke] = useState<{ticketId: string, allocationId: string} | null>(null);
+  const [ticketToRevoke, setTicketToRevoke] = useState<{ ticketId: string, allocationId: string } | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState<string | null>(null);
 
@@ -71,8 +71,8 @@ export function StudentDashboard({
         {/* Allocations Overview */}
         <div className="grid gap-6 md:grid-cols-2">
           {allocations.map((alloc) => (
-            <Card key={alloc.id} className="glass border-0 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all flex flex-col">
-              <CardHeader className="bg-white/5 border-b border-white/5 pb-6">
+            <Card key={alloc.id} className=" p-0 glass border-0 rounded-3xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all flex flex-col">
+              <CardHeader className="bg-white/5 border-b border-white/5 p-6">
                 <CardTitle className="flex justify-between items-center text-xl text-white">
                   <span className="line-clamp-1">{alloc.events.title}</span>
                   <span className="text-xs font-semibold bg-primary/20 px-3 py-1.5 rounded-full text-primary border border-primary/30">
@@ -87,7 +87,7 @@ export function StudentDashboard({
                     {error && <Alert variant="destructive" className="bg-red-500/10 border-red-500/20 text-red-400"><AlertDescription>{error}</AlertDescription></Alert>}
                     <input type="hidden" name="event_id" value={alloc.events.id} />
                     <input type="hidden" name="allocation_id" value={alloc.id} />
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="guest_name" className="text-zinc-300 ml-1">Nome do Convidado</Label>
                       <Input id="guest_name" name="guest_name" required placeholder="João da Silva" className="bg-black/40 border-white/10 text-white rounded-xl h-12" />
@@ -132,9 +132,9 @@ export function StudentDashboard({
               const allocation = allocations.find(a => a.events.title === ticket.events.title);
 
               const statusConfig = {
-                issued:     { label: "Emitido",   icon: TicketIcon,  color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-                checked_in: { label: "Validado",  icon: CheckCircle, color: "bg-green-500/20 text-green-400 border-green-500/30" },
-                revoked:    { label: "Cancelado", icon: XCircle,     color: "bg-red-500/20 text-red-400 border-red-500/30" },
+                issued: { label: "Emitido", icon: TicketIcon, color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+                checked_in: { label: "Validado", icon: CheckCircle, color: "bg-green-500/20 text-green-400 border-green-500/30" },
+                revoked: { label: "Cancelado", icon: XCircle, color: "bg-red-500/20 text-red-400 border-red-500/30" },
               }[ticket.status] ?? { label: ticket.status, icon: TicketIcon, color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" };
 
               const StatusIcon = statusConfig.icon;
@@ -192,7 +192,7 @@ export function StudentDashboard({
 
       {/* Revoke Confirmation Modal */}
       <AlertDialog open={!!ticketToRevoke} onOpenChange={(open) => !open && setTicketToRevoke(null)}>
-        <AlertDialogContent className="glass border-white/10 rounded-3xl p-8">
+        <AlertDialogContent className="glass border-white/10 rounded-3xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl text-white">Cancelar Ingresso</AlertDialogTitle>
             <AlertDialogDescription className="text-zinc-400">
@@ -210,7 +210,7 @@ export function StudentDashboard({
 
       {/* Error Modal */}
       <AlertDialog open={!!errorModal} onOpenChange={(open) => !open && setErrorModal(null)}>
-        <AlertDialogContent className="glass border-white/10 rounded-3xl p-8">
+        <AlertDialogContent className="glass border-white/10 rounded-3xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl text-white">Ops, ocorreu um erro</AlertDialogTitle>
             <AlertDialogDescription className="text-zinc-400">
@@ -225,7 +225,7 @@ export function StudentDashboard({
 
       {/* Success Modal */}
       <AlertDialog open={!!successModal} onOpenChange={(open) => !open && setSuccessModal(null)}>
-        <AlertDialogContent className="glass border-white/10 rounded-3xl p-8">
+        <AlertDialogContent className="glass border-white/10 rounded-3xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl text-white flex items-center gap-2">
               <CheckCircle className="w-6 h-6 text-green-400" /> Sucesso!
