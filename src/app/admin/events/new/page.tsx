@@ -73,6 +73,12 @@ export default function CreateEventPage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="estimated_graduates" className="text-zinc-300 ml-1">Número Estimado de Formandos</Label>
+              <Input id="estimated_graduates" name="estimated_graduates" type="number" min="0" required placeholder="Ex: 50" className="bg-black/40 border-white/10 text-white h-12 rounded-xl" />
+              <p className="text-xs text-zinc-500 ml-1">A capacidade de convites (3 por formando) será calculada automaticamente.</p>
+            </div>
+
             <div className="space-y-2 pt-2">
               <Label htmlFor="banner_file" className="text-zinc-300 ml-1">Capa do Evento (Foto)</Label>
               <div className="flex items-center gap-4">

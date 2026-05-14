@@ -10,6 +10,7 @@ export async function createEvent(formData: FormData) {
   const description = formData.get("description") as string;
   const date = formData.get("date") as string;
   const location = formData.get("location") as string;
+  const estimated_graduates = parseInt(formData.get("estimated_graduates") as string || "0", 10);
   
   const bannerFile = formData.get("banner_file") as File | null;
   let banner_url = null;
@@ -41,6 +42,7 @@ export async function createEvent(formData: FormData) {
       description,
       date: new Date(date).toISOString(),
       location,
+      estimated_graduates,
       banner_url,
     },
   ]);

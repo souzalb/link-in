@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { deleteEvent } from "./actions";
-import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,17 +20,21 @@ export function DeleteEventButton({ eventId }: { eventId: string }) {
   const [loading, setLoading] = useState(false);
   const [errorModal, setErrorModal] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const router = useRouter();
-
   const handleDelete = async () => {
     setLoading(true);
     setConfirmOpen(false);
-    const res = await deleteEvent(eventId);
-    if (res?.error) {
-      setErrorModal(res.error);
-      setLoading(false);
-    } else {
-      router.push("/admin/events");
+    
+    // The server action will throw a redirect on success.
+    // If it returns, it means there was an error.
+    try {
+      const res = await deleteEvent(eventId);
+      if (res?.error) {
+        setErrorModal(res.error);
+        setLoading(false);
+      }
+    } catch (e) {
+      // Next.js redirect throws an error, so we just re-throw it to let Next.js handle the redirect
+      throw e;
     }
   };
 

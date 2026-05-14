@@ -3,6 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 export async function bulkAllocate(eventId: string, emailsText: string, quota: number) {
   const supabase = await createClient();
@@ -78,5 +79,5 @@ export async function deleteEvent(eventId: string) {
   }
 
   revalidatePath("/admin/events");
-  return { success: true };
+  redirect("/admin/events");
 }

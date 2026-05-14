@@ -42,7 +42,7 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
   const totalAllocatedQuota = (event.allocations || []).reduce((sum: number, alloc: any) => sum + alloc.total_quota, 0);
   const totalIssuedTickets = (event.allocations || []).reduce((sum: number, alloc: any) => sum + alloc.used_quota, 0);
   const totalCheckedIn = (event.tickets || []).filter((t: any) => t.status === 'checked_in').length;
-  
+
   const issuePercentage = totalAllocatedQuota > 0 ? Math.round((totalIssuedTickets / totalAllocatedQuota) * 100) : 0;
 
   return (
@@ -58,18 +58,18 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {/* Left Column: Event Details & Bulk Action */}
         <div className="flex-1 space-y-8 w-full">
-          <Card className="glass border-0 rounded-[2rem] overflow-hidden">
+          <Card className="glass border-0 rounded-[2rem] overflow-hidden p-0">
             <div className="h-48 bg-black/40 relative">
               {event.banner_url ? (
                 <img src={event.banner_url} alt={event.title} className="w-full h-full object-cover opacity-80" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-tr from-primary/80 to-primary/40 flex items-center justify-center">
-                   <Calendar className="w-16 h-16 text-white/40" />
+                  <Calendar className="w-16 h-16 text-white/40" />
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 to-transparent"></div>
             </div>
-            <CardHeader className="pt-6">
+            <CardHeader className="px-6 pb-4 ">
               <CardTitle className="text-3xl text-white">{event.title}</CardTitle>
               <CardDescription className="flex items-center gap-2 mt-2 text-zinc-400">
                 <Calendar className="w-4 h-4" /> {new Date(event.date).toLocaleString('pt-BR')}
@@ -83,8 +83,8 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
             </CardHeader>
           </Card>
 
-          <Card className="glass border-0 rounded-[2rem] overflow-hidden">
-            <CardHeader className="bg-white/5 border-b border-white/5">
+          <Card className="glass border-0 rounded-[2rem] overflow-hidden p-0">
+            <CardHeader className="bg-white/5 border-b border-white/5 p-6">
               <CardTitle className="text-xl text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" /> Cadastramento em Massa
               </CardTitle>
@@ -92,7 +92,7 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
                 Cadastre alunos e atribua cotas instantaneamente. Eles podem acessar com seus e-mails e a senha padrão: <strong>linkin_default_2026</strong>.
               </CardDescription>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="p-6">
               <BulkAllocationForm eventId={event.id} />
             </CardContent>
           </Card>
@@ -101,40 +101,56 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
         {/* Right Column: Stats */}
         <div className="w-full md:w-80 space-y-6">
           <Card className="glass border-0 rounded-[2rem] overflow-hidden p-6 relative">
-             <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-2xl rounded-full"></div>
-             <h3 className="text-lg font-semibold text-white mb-6">Estatísticas de Distribuição</h3>
-             
-             <div className="space-y-6">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-zinc-400 flex items-center gap-1"><Ticket className="w-4 h-4"/> Emitidos / Cota Total</span>
-                    <span className="text-white font-medium">{totalIssuedTickets} / {totalAllocatedQuota}</span>
-                  </div>
-                  <div className="h-3 bg-black/40 rounded-full overflow-hidden">
-                    <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${issuePercentage}%` }}></div>
-                  </div>
-                </div>
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 blur-2xl rounded-full"></div>
+            <h3 className="text-lg font-semibold text-white mb-6">Visão Geral do Evento</h3>
 
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4">
-                  <div className="bg-green-500/20 p-3 rounded-xl text-green-400">
-                    <CheckCircle className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-zinc-400">Entradas Validadas</p>
-                    <p className="text-2xl font-bold text-white">{totalCheckedIn}</p>
-                  </div>
-                </div>
+            <div className="space-y-6">
+              {/* Capacidade Máxima */}
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                <p className="text-sm text-zinc-400 mb-1">Formandos Estimados</p>
+                <p className="text-2xl font-bold text-white mb-4">{event.estimated_graduates}</p>
                 
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4">
-                  <div className="bg-blue-500/20 p-3 rounded-xl text-blue-400">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-zinc-400">Total de Alunos</p>
-                    <p className="text-2xl font-bold text-white">{(event.allocations || []).length}</p>
-                  </div>
+                <div className="flex justify-between text-sm mb-2 mt-4 border-t border-white/10 pt-4">
+                  <span className="text-zinc-400 flex items-center gap-1"><Ticket className="w-4 h-4" /> Convites Possíveis</span>
+                  <span className="text-white font-medium">{event.estimated_graduates * 3}</span>
                 </div>
-             </div>
+                <div className="h-1.5 bg-black/40 rounded-full overflow-hidden mt-2">
+                  <div className="h-full bg-zinc-500 rounded-full transition-all duration-1000" style={{ width: `100%` }}></div>
+                </div>
+              </div>
+
+              {/* Distribuição (Cotas) */}
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-zinc-400 flex items-center gap-1"><Users className="w-4 h-4" /> Cotas Atribuídas</span>
+                  <span className="text-white font-medium">{totalAllocatedQuota} / {event.estimated_graduates * 3}</span>
+                </div>
+                <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
+                  <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: event.estimated_graduates > 0 ? `${Math.min(Math.round((totalAllocatedQuota / (event.estimated_graduates * 3)) * 100), 100)}%` : '0%' }}></div>
+                </div>
+              </div>
+
+              {/* Emissão (Ingressos gerados) */}
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-zinc-400 flex items-center gap-1"><Ticket className="w-4 h-4" /> Ingressos Emitidos</span>
+                  <span className="text-white font-medium">{totalIssuedTickets} / {totalAllocatedQuota}</span>
+                </div>
+                <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${issuePercentage}%` }}></div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex items-center gap-4 mt-6">
+                <div className="bg-green-500/20 p-3 rounded-xl text-green-400">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-sm text-zinc-400">Entradas Validadas</p>
+                  <p className="text-2xl font-bold text-white">{totalCheckedIn}</p>
+                </div>
+              </div>
+            </div>
           </Card>
         </div>
       </div>
