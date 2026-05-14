@@ -33,10 +33,10 @@ export default function ScannerPage() {
     <div className="min-h-screen bg-zinc-950 text-white flex flex-col p-4 md:p-8 relative">
       <header className="flex items-center justify-between mb-8 z-10">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Access Control</h1>
-          <p className="text-sm text-zinc-400">Scan digital tickets</p>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">Controle de Acesso</h1>
+          <p className="text-sm text-zinc-400">Escaneie os ingressos digitais</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={handleLogout} className="text-zinc-400 hover:text-white hover:bg-zinc-800">
+        <Button variant="ghost" size="icon" onClick={handleLogout} className="text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl">
           <LogOut className="h-5 w-5" />
         </Button>
       </header>

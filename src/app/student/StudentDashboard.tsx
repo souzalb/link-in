@@ -113,70 +113,81 @@ export function StudentDashboard({
         </div>
 
         {/* Issued Tickets */}
-        <h2 className="text-2xl font-bold tracking-tight text-white mt-12 mb-6">Seus Ingressos Emitidos</h2>
-        <div className="glass rounded-[2rem] border-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-white/5 border-b border-white/5 text-zinc-400 uppercase text-xs tracking-wider">
-                <tr>
-                  <th className="px-6 py-5 font-medium">Convidado</th>
-                  <th className="px-6 py-5 font-medium">Evento</th>
-                  <th className="px-6 py-5 font-medium">Status</th>
-                  <th className="px-6 py-5 font-medium text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {tickets.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-zinc-500">Nenhum ingresso emitido ainda.</td>
-                  </tr>
-                )}
-                {tickets.map((ticket) => {
-                  const allocation = allocations.find(a => a.events.title === ticket.events.title);
-                  return (
-                    <tr key={ticket.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-white">{ticket.guest_name}</div>
-                        <div className="text-zinc-400 mt-1">{ticket.guest_email}</div>
-                      </td>
-                      <td className="px-6 py-4 text-zinc-300">{ticket.events.title}</td>
-                      <td className="px-6 py-4">
-                        {ticket.status === 'issued' && <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30"><TicketIcon className="w-3.5 h-3.5"/> Emitido</span>}
-                        {ticket.status === 'checked_in' && <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30"><CheckCircle className="w-3.5 h-3.5"/> Validado</span>}
-                        {ticket.status === 'revoked' && <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30"><XCircle className="w-3.5 h-3.5"/> Cancelado</span>}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        {ticket.status === 'issued' && allocation && (
-                          <div className="flex items-center justify-end gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-primary hover:text-primary hover:bg-primary/10 rounded-xl" 
-                              onClick={() => {
-                                navigator.clipboard.writeText(`${window.location.origin}/ticket/${ticket.id}`);
-                                setSuccessModal("Link do ingresso copiado com sucesso! Agora é só colar no WhatsApp do seu convidado.");
-                              }}
-                            >
-                              Copiar Link
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl" 
-                              onClick={() => setTicketToRevoke({ ticketId: ticket.id, allocationId: allocation.id })}
-                            >
-                              Cancelar
-                            </Button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        <div className="flex items-center justify-between mt-12 mb-6">
+          <h2 className="text-2xl font-bold tracking-tight text-white">Seus Ingressos Emitidos</h2>
+          <span className="text-sm text-zinc-400 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
+            {tickets.length} {tickets.length === 1 ? 'ingresso' : 'ingressos'}
+          </span>
         </div>
+
+        {tickets.length === 0 ? (
+          <div className="glass rounded-3xl p-16 flex flex-col items-center justify-center text-center">
+            <TicketIcon className="w-16 h-16 text-zinc-700 mb-4" />
+            <p className="text-lg font-semibold text-zinc-400">Nenhum ingresso emitido ainda</p>
+            <p className="text-sm text-zinc-500 mt-1">Use os cards acima para emitir convites para seus amigos.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {tickets.map((ticket) => {
+              const allocation = allocations.find(a => a.events.title === ticket.events.title);
+
+              const statusConfig = {
+                issued:     { label: "Emitido",   icon: TicketIcon,  color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+                checked_in: { label: "Validado",  icon: CheckCircle, color: "bg-green-500/20 text-green-400 border-green-500/30" },
+                revoked:    { label: "Cancelado", icon: XCircle,     color: "bg-red-500/20 text-red-400 border-red-500/30" },
+              }[ticket.status] ?? { label: ticket.status, icon: TicketIcon, color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/30" };
+
+              const StatusIcon = statusConfig.icon;
+              const hasActions = ticket.status === 'issued' && allocation;
+
+              return (
+                <div key={ticket.id} className="glass rounded-2xl px-5 py-4 flex items-center gap-4 hover:bg-white/[0.04] transition-colors">
+                  {/* Avatar */}
+                  <div className="w-10 h-10 rounded-full bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0 text-primary font-bold">
+                    {ticket.guest_name.charAt(0).toUpperCase()}
+                  </div>
+
+                  {/* Main info — takes all remaining space */}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-white truncate">{ticket.guest_name}</div>
+                    <div className="text-xs text-zinc-500 truncate mt-0.5">{ticket.guest_email}</div>
+                    <div className="text-xs text-zinc-400 truncate mt-0.5">{ticket.events.title}</div>
+                  </div>
+
+                  {/* Right column: badge on top, buttons below (when applicable) */}
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    {/* Status Badge */}
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${statusConfig.color}`}>
+                      <StatusIcon className="w-3 h-3" />
+                      {statusConfig.label}
+                    </span>
+
+                    {/* Action buttons — only when ticket is actionable */}
+                    {hasActions && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          className="h-7 px-3 text-xs font-medium text-zinc-400 hover:text-primary hover:bg-primary/10 rounded-lg border border-white/8 hover:border-primary/20 transition-all"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/ticket/${ticket.id}`);
+                            setSuccessModal("Link copiado! Cole no WhatsApp do seu convidado.");
+                          }}
+                        >
+                          Copiar Link
+                        </button>
+                        <button
+                          className="h-7 px-3 text-xs font-medium text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-white/8 hover:border-red-500/20 transition-all"
+                          onClick={() => setTicketToRevoke({ ticketId: ticket.id, allocationId: allocation.id })}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Revoke Confirmation Modal */}

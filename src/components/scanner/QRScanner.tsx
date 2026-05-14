@@ -19,9 +19,16 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
 
   const startScanning = async () => {
     try {
-      if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode("reader");
+      // Always create a fresh instance to avoid state issues
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
+            await scannerRef.current.stop();
+          }
+        } catch (_) {}
+        scannerRef.current = null;
       }
+      scannerRef.current = new Html5Qrcode("reader");
       
       setResult(null);
       setScanning(true);
@@ -30,13 +37,18 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
-          if (loading) return;
+          // Guard: only process one scan at a time
+          if (loading || !scannerRef.current) return;
           
           setLoading(true);
-          // Pause scanning while validating
-          if (scannerRef.current?.getState() === Html5QrcodeScannerState.SCANNING) {
-             scannerRef.current.pause();
-          }
+
+          // Stop the scanner cleanly before calling the server action
+          try {
+            if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
+              await scannerRef.current.stop();
+            }
+          } catch (_) {}
+          setScanning(false);
 
           const response = await onScanSuccess(decodedText);
           
@@ -50,73 +62,88 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
           setResult(response);
           setLoading(false);
         },
-        (errorMessage) => {
-          // Ignored parse errors
+        (_errorMessage) => {
+          // Ignored per-frame parse errors (camera looking for QR)
         }
       );
     } catch (err) {
       console.error(err);
-      setResult({ success: false, message: "Could not access camera." });
+      setResult({ success: false, message: "Não foi possível acessar a câmera." });
       setScanning(false);
     }
   };
 
   const stopScanning = async () => {
-    if (scannerRef.current && scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
-      await scannerRef.current.stop();
-    }
+    try {
+      if (scannerRef.current && scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
+        await scannerRef.current.stop();
+      }
+    } catch (_) {}
     setScanning(false);
   };
 
   useEffect(() => {
     return () => {
-      if (scannerRef.current && scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
-        scannerRef.current.stop().catch(console.error);
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
+            scannerRef.current.stop().catch(() => {});
+          }
+        } catch (_) {}
       }
     };
   }, []);
 
+  // Simply restart from scratch for next scan
   const resumeScanning = () => {
     setResult(null);
-    if (scannerRef.current?.getState() === Html5QrcodeScannerState.PAUSED) {
-      scannerRef.current.resume();
-    } else {
-      startScanning();
-    }
+    setLoading(false);
+    startScanning();
   };
 
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto space-y-4">
-      {result ? (
-        <Card className={`w-full p-6 text-center flex flex-col items-center space-y-4 ${result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+      {/* #reader MUST always stay mounted so Html5Qrcode can find the element on re-init */}
+      <Card className={`w-full overflow-hidden bg-black rounded-3xl border border-white/10 ${result ? 'hidden' : 'block'}`}>
+        <div id="reader" className="w-full min-h-[300px] bg-black"></div>
+      </Card>
+
+      {result && (
+        <Card className={`w-full p-8 text-center flex flex-col items-center gap-5 rounded-3xl border-0 shadow-2xl ${
+          result.success
+            ? 'bg-green-500/10 border border-green-500/30'
+            : 'bg-red-500/10 border border-red-500/30'
+        }`}>
           {result.success ? (
-            <CheckCircle2 className="w-20 h-20 text-green-500 animate-bounce" />
+            <CheckCircle2 className="w-24 h-24 text-green-400 animate-bounce" />
           ) : (
-            <XCircle className="w-20 h-20 text-red-500 animate-pulse" />
+            <XCircle className="w-24 h-24 text-red-400 animate-pulse" />
           )}
-          <h2 className={`text-2xl font-bold ${result.success ? 'text-green-700' : 'text-red-700'}`}>
-            {result.success ? "VALIDADO COM SUCESSO" : "ERRO NA VALIDAÇÃO"}
+          <h2 className={`text-3xl font-black tracking-tight ${
+            result.success ? 'text-green-400' : 'text-red-400'
+          }`}>
+            {result.success ? "VALIDADO!" : "INVÁLIDO"}
           </h2>
-          <p className="text-lg font-medium text-zinc-700">{result.message}</p>
-          <Button onClick={resumeScanning} className="w-full mt-4" size="lg">
-            Scan Next Ticket
+          <p className="text-base font-medium text-zinc-300 leading-relaxed">{result.message}</p>
+          <Button
+            onClick={resumeScanning}
+            className="w-full h-14 rounded-2xl text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-0 mt-2"
+            disabled={loading}
+          >
+            {loading ? "Aguarde..." : "Escanear Próximo"}
           </Button>
-        </Card>
-      ) : (
-        <Card className="w-full overflow-hidden bg-black rounded-xl">
-          <div id="reader" className="w-full min-h-[300px] bg-black"></div>
         </Card>
       )}
 
       {!scanning && !result && (
-        <Button onClick={startScanning} size="lg" className="w-full shadow-lg h-16 text-lg">
-          <Camera className="mr-2 h-6 w-6" /> Start Scanner
+        <Button onClick={startScanning} size="lg" className="w-full h-16 rounded-2xl text-lg font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_30px_-5px_rgba(var(--primary),0.5)]">
+          <Camera className="mr-2 h-6 w-6" /> Iniciar Scanner
         </Button>
       )}
       
       {scanning && !result && (
-        <Button onClick={stopScanning} variant="destructive" size="lg" className="w-full">
-          Stop Scanner
+        <Button onClick={stopScanning} variant="destructive" size="lg" className="w-full h-14 rounded-2xl font-semibold">
+          Parar Scanner
         </Button>
       )}
     </div>
