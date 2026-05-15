@@ -77,11 +77,39 @@ export async function bulkAllocate(eventId: string, emailsText: string, quota: n
 
   if (roleData?.role !== "admin") return { error: "Not authorized" };
 
-  // Parse emails
-  const rawEmails = emailsText.split(/[\n,;]+/).map(e => e.trim().toLowerCase()).filter(e => e.length > 0);
-  const emails = [...new Set(rawEmails)]; // remove duplicates
+  // Parse entries: each line must be "email,cpfPrefix"
+  const rawLines = emailsText.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
 
-  if (emails.length === 0) return { error: "No valid emails found." };
+  if (rawLines.length === 0) return { error: "Nenhuma entrada encontrada." };
+
+  // Validate and parse each line
+  const parsed: { email: string; cpfPrefix: string }[] = [];
+  for (const line of rawLines) {
+    const commaIdx = line.indexOf(",");
+    if (commaIdx === -1) {
+      return { error: `Formato inválido na linha: "${line}". Use o formato: email,123456` };
+    }
+    const email = line.slice(0, commaIdx).trim().toLowerCase();
+    const cpfPrefix = line.slice(commaIdx + 1).trim().replace(/\D/g, "");
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { error: `E-mail inválido: "${email}"` };
+    }
+    if (cpfPrefix.length !== 6) {
+      return { error: `O prefixo do CPF de "${email}" deve ter exatamente 6 dígitos. Recebido: "${line.slice(commaIdx + 1).trim()}"` };
+    }
+    parsed.push({ email, cpfPrefix });
+  }
+
+  // Remove duplicates by email (keep last occurrence)
+  const deduped = parsed.reduce((acc, entry) => {
+    acc.set(entry.email, entry);
+    return acc;
+  }, new Map<string, { email: string; cpfPrefix: string }>());
+  const entries = Array.from(deduped.values());
+  const emails = entries.map(e => e.email);
+
+  if (emails.length === 0) return { error: "Nenhum e-mail válido encontrado." };
 
   // Fetch event capacity and current allocations
   const { data: event } = await supabase
@@ -118,20 +146,35 @@ export async function bulkAllocate(eventId: string, emailsText: string, quota: n
   let successCount = 0;
   let errorCount = 0;
 
-  for (const email of emails) {
-    // 1. Create or ensure user exists using Admin API
-    const { error: authError } = await adminClient.auth.admin.createUser({
-      email: email,
-      password: "linkin_default_2026",
+  for (const { email, cpfPrefix } of entries) {
+    // 1. Try to create user with CPF prefix as password.
+    //    If user already exists, update their password to the new CPF prefix.
+    const { error: createError } = await adminClient.auth.admin.createUser({
+      email,
+      password: cpfPrefix,
       email_confirm: true,
     });
-    
-    // authError is fine if user already exists
 
-    // 2. Insert into user_roles (default is student, so we can let the trigger handle it, 
-    // or insert if not exists to be safe)
-    
-    // 3. Upsert allocation
+    if (createError) {
+      const isAlreadyRegistered =
+        createError.message.toLowerCase().includes("already been registered") ||
+        (createError as any).code === "email_exists";
+
+      if (isAlreadyRegistered) {
+        // Update password so it always reflects the current CPF prefix
+        const { data: listData } = await adminClient.auth.admin.listUsers();
+        const existingUser = listData?.users?.find(u => u.email === email);
+        if (existingUser) {
+          await adminClient.auth.admin.updateUserById(existingUser.id, { password: cpfPrefix });
+        }
+      } else {
+        console.error(`Auth error for ${email}:`, createError);
+        errorCount++;
+        continue;
+      }
+    }
+
+    // 2. Upsert allocation
     const { error: allocError } = await supabase
       .from("allocations")
       .upsert({
@@ -149,9 +192,9 @@ export async function bulkAllocate(eventId: string, emailsText: string, quota: n
   }
 
   revalidatePath(`/admin/events/${eventId}`);
-  return { 
-    success: true, 
-    message: `Alocados ${successCount} alunos com sucesso.` + (errorCount > 0 ? ` Falhas: ${errorCount}.` : "") 
+  return {
+    success: true,
+    message: `${successCount} aluno(s) cadastrado(s) com sucesso.` + (errorCount > 0 ? ` Falhas: ${errorCount}.` : "")
   };
 }
 

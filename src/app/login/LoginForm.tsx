@@ -18,16 +18,13 @@ export function LoginForm() {
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
     setError(null);
-    
-    // Auto-fill the default password for students
-    if (role === "student") {
-      formData.append("password", "linkin_default_2026");
-    }
 
     const result = await login(formData);
     if (result?.error) {
-      setError(result.error === "Invalid login credentials" && role === "student" 
-        ? "Aluno não encontrado. Verifique seu e-mail." 
+      setError(result.error === "Invalid login credentials"
+        ? role === "student"
+          ? "E-mail ou senha incorretos. Verifique seus dados."
+          : "Credenciais inválidas."
         : result.error);
       setLoading(false);
     }
@@ -96,24 +93,26 @@ export function LoginForm() {
               />
             </div>
 
-            <AnimatePresence>
-              {role === "admin" && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                  animate={{ opacity: 1, height: "auto", marginTop: 20 }}
-                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                  className="space-y-2 overflow-hidden"
-                >
-                  <Label htmlFor="password" className="text-zinc-300 ml-1">Senha</Label>
-                  <Input 
-                    id="password" 
-                    name="password" 
-                    type="password" 
-                    required={role === "admin"} 
-                    className="h-14 bg-black/40 border-white/10 text-white rounded-2xl px-4 focus-visible:ring-primary/50" 
-                  />
-                </motion.div>
-              )}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={role}
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: "auto", marginTop: 20 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="space-y-2 overflow-hidden"
+              >
+                <Label htmlFor="password" className="text-zinc-300 ml-1">
+                  {role === "student" ? "Senha (6 primeiros dígitos do CPF)" : "Senha"}
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  placeholder={role === "student" ? "Ex: 123456" : ""}
+                  className="h-14 bg-black/40 border-white/10 text-white rounded-2xl px-4 placeholder:text-zinc-600 focus-visible:ring-primary/50"
+                />
+              </motion.div>
             </AnimatePresence>
 
             <Button 
