@@ -25,21 +25,28 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
           if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
             await scannerRef.current.stop();
           }
-        } catch (_) {}
+        } catch (_) { }
         scannerRef.current = null;
       }
       scannerRef.current = new Html5Qrcode("reader");
-      
+
       setResult(null);
       setScanning(true);
-      
+
       await scannerRef.current.start(
         { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        {
+          fps: 10,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const boxSize = Math.floor(minEdge * 0.7);
+            return { width: boxSize, height: boxSize };
+          }
+        },
         async (decodedText) => {
           // Guard: only process one scan at a time
           if (loading || !scannerRef.current) return;
-          
+
           setLoading(true);
 
           // Stop the scanner cleanly before calling the server action
@@ -47,16 +54,16 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
             if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
               await scannerRef.current.stop();
             }
-          } catch (_) {}
+          } catch (_) { }
           setScanning(false);
 
           const response = await onScanSuccess(decodedText);
-          
+
           // Play sounds based on success
           if (response.success) {
-            new Audio('/success.mp3').play().catch(() => {});
+            new Audio('/success.mp3').play().catch(() => { });
           } else {
-            new Audio('/error.mp3').play().catch(() => {});
+            new Audio('/error.mp3').play().catch(() => { });
           }
 
           setResult(response);
@@ -78,7 +85,7 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
       if (scannerRef.current && scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
         await scannerRef.current.stop();
       }
-    } catch (_) {}
+    } catch (_) { }
     setScanning(false);
   };
 
@@ -87,9 +94,9 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
       if (scannerRef.current) {
         try {
           if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
-            scannerRef.current.stop().catch(() => {});
+            scannerRef.current.stop().catch(() => { });
           }
-        } catch (_) {}
+        } catch (_) { }
       }
     };
   }, []);
@@ -104,24 +111,40 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
   return (
     <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto space-y-4">
       {/* #reader MUST always stay mounted so Html5Qrcode can find the element on re-init */}
-      <Card className={`w-full overflow-hidden bg-black rounded-3xl border border-white/10 ${result ? 'hidden' : 'block'}`}>
-        <div id="reader" className="w-full min-h-[300px] bg-black"></div>
+      <Card className={`w-full overflow-hidden bg-black rounded-3xl border border-white/10 relative ${result ? 'hidden' : 'block'}`}>
+        <style>
+          {`
+            #reader video {
+              object-fit: cover !important;
+              width: 100% !important;
+              height: 100% !important;
+            }
+            #reader {
+              border: none !important;
+            }
+            #reader__scan_region {
+              background: transparent !important;
+            }
+            #reader__dashboard {
+              display: none !important;
+            }
+          `}
+        </style>
+        <div id="reader" className="w-full aspect-square bg-black"></div>
       </Card>
 
       {result && (
-        <Card className={`w-full p-8 text-center flex flex-col items-center gap-5 rounded-3xl border-0 shadow-2xl ${
-          result.success
-            ? 'bg-green-500/10 border border-green-500/30'
-            : 'bg-red-500/10 border border-red-500/30'
-        }`}>
+        <Card className={`w-full p-8 text-center flex flex-col items-center gap-5 rounded-3xl border-0 shadow-2xl ${result.success
+          ? 'bg-green-500/10 border border-green-500/30'
+          : 'bg-red-500/10 border border-red-500/30'
+          }`}>
           {result.success ? (
             <CheckCircle2 className="w-24 h-24 text-green-400 animate-bounce" />
           ) : (
             <XCircle className="w-24 h-24 text-red-400 animate-pulse" />
           )}
-          <h2 className={`text-3xl font-black tracking-tight ${
-            result.success ? 'text-green-400' : 'text-red-400'
-          }`}>
+          <h2 className={`text-3xl font-black tracking-tight ${result.success ? 'text-green-400' : 'text-red-400'
+            }`}>
             {result.success ? "VALIDADO!" : "INVÁLIDO"}
           </h2>
           <p className="text-base font-medium text-zinc-300 leading-relaxed">{result.message}</p>
@@ -140,7 +163,7 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
           <Camera className="mr-2 h-6 w-6" /> Iniciar Scanner
         </Button>
       )}
-      
+
       {scanning && !result && (
         <Button onClick={stopScanning} variant="destructive" size="lg" className="w-full h-14 rounded-2xl font-semibold">
           Parar Scanner

@@ -41,7 +41,7 @@ export default function ScannerPage() {
         </Button>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-start relative z-10 pt-10">
+      <main className="flex-1 flex flex-col items-center justify-start relative z-10 pt-12">
         <QRScanner onScanSuccess={handleScanSuccess} />
       </main>
 
