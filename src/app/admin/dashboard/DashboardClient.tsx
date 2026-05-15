@@ -26,6 +26,7 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
   const [searchEmail, setSearchEmail] = useState("");
   const [filterEvent, setFilterEvent] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
+  const [filterAvailable, setFilterAvailable] = useState(false);
 
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
@@ -39,17 +40,13 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
     setLoading(false);
   };
 
-  // Metrics calculation
-  const totalAllocations = allocations.length;
-  const totalQuota = allocations.reduce((sum, alloc) => sum + alloc.total_quota, 0);
-  const totalUsed = allocations.reduce((sum, alloc) => sum + alloc.used_quota, 0);
-
   // Filtered allocations
   const filteredAllocations = useMemo(() => {
     return allocations.filter((alloc) => {
       const matchEmail = alloc.student_email.toLowerCase().includes(searchEmail.toLowerCase());
       const matchEvent = filterEvent ? alloc.event_id === filterEvent : true;
-      
+      const matchAvailable = filterAvailable ? alloc.used_quota < alloc.total_quota : true;
+
       let matchDate = true;
       if (filterMonth && alloc.events?.date) {
         const allocDate = new Date(alloc.events.date);
@@ -57,9 +54,14 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
         matchDate = allocDate.getFullYear() === parseInt(year) && (allocDate.getMonth() + 1) === parseInt(month);
       }
 
-      return matchEmail && matchEvent && matchDate;
+      return matchEmail && matchEvent && matchDate && matchAvailable;
     });
-  }, [allocations, searchEmail, filterEvent, filterMonth]);
+  }, [allocations, searchEmail, filterEvent, filterMonth, filterAvailable]);
+
+  // Metrics calculated from filtered results
+  const totalAllocations = filteredAllocations.length;
+  const totalQuota = filteredAllocations.reduce((sum, alloc) => sum + alloc.total_quota, 0);
+  const totalUsed = filteredAllocations.reduce((sum, alloc) => sum + alloc.used_quota, 0);
 
   return (
     <div className="space-y-8 pb-12">
@@ -112,7 +114,7 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
                 className="pl-11 bg-black/40 border-white/10 text-white rounded-xl h-11 w-full"
               />
             </div>
-            <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
               <select 
                 value={filterEvent}
                 onChange={(e) => setFilterEvent(e.target.value)}
@@ -128,6 +130,19 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
                 onChange={(e) => setFilterMonth(e.target.value)}
                 className="bg-black/40 border-white/10 text-white rounded-xl h-11 w-full md:w-48"
               />
+
+              <button
+                type="button"
+                onClick={() => setFilterAvailable((v) => !v)}
+                className={`inline-flex items-center gap-2 h-11 px-4 rounded-xl border text-sm font-medium transition-all duration-200 shrink-0 ${
+                  filterAvailable
+                    ? "bg-green-500/20 border-green-500/50 text-green-400 shadow-[0_0_16px_-4px_rgba(34,197,94,0.4)]"
+                    : "bg-black/40 border-white/10 text-zinc-400 hover:border-white/20 hover:text-zinc-300"
+                }`}
+              >
+                <Ticket className="w-4 h-4" />
+                Com ingressos disponíveis
+              </button>
             </div>
           </div>
 
