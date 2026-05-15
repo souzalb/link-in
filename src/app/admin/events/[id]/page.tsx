@@ -1,9 +1,10 @@
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { BulkAllocationForm } from "./BulkAllocationForm";
 import Link from "next/link";
-import { ArrowLeft, Ticket, Users, Calendar, MapPin, CheckCircle } from "lucide-react";
+import { ArrowLeft, Ticket, Users, Calendar, MapPin, CheckCircle, Pencil } from "lucide-react";
 
 import { DeleteEventButton } from "./DeleteEventButton";
 
@@ -52,7 +53,16 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
           <ArrowLeft className="w-4 h-4 mr-1" />
           Voltar para Eventos
         </Link>
-        <DeleteEventButton eventId={id} />
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/events/${id}/edit`}
+            className={buttonVariants({ variant: "outline", className: "h-10 px-4 rounded-xl border-white/10 bg-white/5 text-white hover:bg-white/10 gap-2" })}
+          >
+            <Pencil className="w-4 h-4" />
+            Editar Evento
+          </Link>
+          <DeleteEventButton eventId={id} />
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
