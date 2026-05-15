@@ -75,7 +75,7 @@ export async function bulkAllocate(eventId: string, emailsText: string, quota: n
     .eq("user_id", user.id)
     .single();
 
-  if (roleData?.role !== "admin") return { error: "Not authorized" };
+  if (!["admin", "super_admin"].includes(roleData?.role ?? "")) return { error: "Not authorized" };
 
   // Parse entries: each line must be "email,cpfPrefix"
   const rawLines = emailsText.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);

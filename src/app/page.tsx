@@ -20,7 +20,7 @@ export default async function Home() {
 
   const role = roleData?.role;
 
-  if (role === "admin") {
+  if (role === "admin" || role === "super_admin") {
     redirect("/admin/events");
   } else if (role === "scanner") {
     redirect("/scanner");

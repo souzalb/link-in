@@ -3,7 +3,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Ticket, LogOut, Calendar, Users, Settings } from "lucide-react";
+import { Ticket, LogOut, Calendar, Users, ShieldCheck } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion } from "framer-motion";
 
@@ -31,6 +31,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/admin/events", icon: Calendar, label: "Eventos" },
     { href: "/admin/dashboard", icon: Users, label: "Dashboard" },
+    { href: "/admin/organizers", icon: ShieldCheck, label: "Organizadores" },
   ];
 
   return (
@@ -70,8 +71,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
         
-        <div className="p-4 border-t border-white/10 m-4 bg-white/5 rounded-2xl flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3 overflow-hidden">
+        <div className="p-4 border-t border-white/10 m-4 flex items-center justify-between gap-2">
+          <Link href="/admin/profile" className="flex items-center gap-3 overflow-hidden flex-1 bg-white/5 hover:bg-white/10 transition-colors rounded-2xl p-2 -m-2">
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
               <span className="text-primary font-bold text-sm">
                 {userEmail ? userEmail.charAt(0).toUpperCase() : "A"}
@@ -81,7 +82,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <span className="text-sm font-semibold text-white truncate">Administrador</span>
               <span className="text-xs text-zinc-400 truncate w-28">{userEmail || "Carregando..."}</span>
             </div>
-          </div>
+          </Link>
           <button 
             onClick={handleSignOut}
             title="Sair da plataforma"
