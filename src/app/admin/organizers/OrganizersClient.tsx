@@ -261,7 +261,7 @@ export function OrganizersClient({ organizers: initial, callerRole }: {
       </div>
 
       {/* List */}
-      <Card className="glass border-0 rounded-[2rem] overflow-hidden">
+      <Card className="glass border-0 rounded-[2rem] overflow-hidden p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-white/5 border-b border-white/5 text-zinc-400 uppercase text-xs tracking-wider">
