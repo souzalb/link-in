@@ -41,7 +41,8 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
             const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
             const boxSize = Math.floor(minEdge * 0.7);
             return { width: boxSize, height: boxSize };
-          }
+          },
+          aspectRatio: 1.0
         },
         async (decodedText) => {
           // Guard: only process one scan at a time
@@ -119,11 +120,24 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
               width: 100% !important;
               height: 100% !important;
             }
+            #reader canvas {
+              display: none !important;
+            }
             #reader {
               border: none !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              overflow: hidden !important;
             }
             #reader__scan_region {
               background: transparent !important;
+              width: 100% !important;
+              height: 100% !important;
+            }
+            #reader__scan_region video {
+              width: 100% !important;
+              height: 100% !important;
             }
             #reader__dashboard {
               display: none !important;
