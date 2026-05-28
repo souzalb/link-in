@@ -83,10 +83,6 @@ export function StudentDashboard({
         
         const confirmDate = new Date(event.date);
         confirmDate.setDate(confirmDate.getDate() - 7);
-        
-        const mapsLink = event.location 
-          ? `\n🗺️ Mapa: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`
-          : '';
 
         const message = `🎉 CONVITE ESPECIAL: MINHA FORMATURA! 🎓
 
@@ -95,7 +91,7 @@ export function StudentDashboard({
 Guarde esta data na agenda:
 🗓️ Quando: ${new Date(event.date).toLocaleDateString()}
 🕗 Horário: ${new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-📍 Onde: ${event.location || '[Inserir Local]'}${mapsLink}
+📍 Onde: ${event.location || '[Inserir Local]'}
 
 👗 Traje: Esporte Fino
 
