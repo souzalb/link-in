@@ -80,20 +80,28 @@ export function StudentDashboard({
         const phone = `55${rawPhone.replace(/\D/g, '')}`;
         const event = allocation.events;
         const link = `${window.location.origin}/ticket/${res.ticketId}`;
+        
+        const confirmDate = new Date(event.date);
+        confirmDate.setDate(confirmDate.getDate() - 7);
+        
+        const mapsLink = event.location 
+          ? `\n🗺️ Mapa: https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`
+          : '';
+
         const message = `🎉 CONVITE ESPECIAL: MINHA FORMATURA! 🎓
 
-É com muita alegria que convido você para a minha cerimônia de colação de grau em [Nome do Curso]. Foram anos de esforço e agora é hora de comemorar essa vitória! 🚀👔
+É com muita alegria que convido você para a minha cerimônia de colação de grau. Foram anos de esforço e agora é hora de comemorar essa vitória! 🚀👔
 
 Guarde esta data na agenda:
 🗓️ Quando: ${new Date(event.date).toLocaleDateString()}
 🕗 Horário: ${new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-📍 Onde: ${event.location || '[Inserir Local]'}
+📍 Onde: ${event.location || '[Inserir Local]'}${mapsLink}
 
-👗 Traje: [Inserir Esporte Fino / Gala / Opcional]
+👗 Traje: Esporte Fino
 
-Sua presença é fundamental para tornar esse dia inesquecível. ✨Confirme se você vai conseguir ir até o dia [Inserir Data]! 👍
+Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se você vai conseguir ir até o dia ${confirmDate.toLocaleDateString()}! 👍
 
-🔗Acesse seu convite pelo link:
+🔗 Acesse seu convite pelo link:
 ${link}`;
         
         const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
