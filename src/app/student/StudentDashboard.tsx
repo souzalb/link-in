@@ -24,13 +24,13 @@ type Allocation = {
   id: string;
   total_quota: number;
   used_quota: number;
-  events: { id: string; title: string; date: string };
+  events: { id: string; title: string; date: string; location?: string };
 };
 
 type Ticket = {
   id: string;
   guest_name: string;
-  guest_email: string;
+  guest_phone: string;
   status: string;
   events: { title: string };
 };
@@ -51,11 +51,55 @@ export function StudentDashboard({
   const [errorModal, setErrorModal] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState<string | null>(null);
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length > 11) value = value.slice(0, 11);
+    
+    if (value.length > 2) {
+      value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+    }
+    if (value.length > 9) {
+      value = `${value.slice(0, 10)}-${value.slice(10)}`;
+    }
+    e.target.value = value;
+  };
+
   const handleIssue = async (formData: FormData) => {
     setLoading(true);
     setError(null);
     const res = await issueTicket(formData);
-    if (res?.error) setError(res.error);
+    if (res?.error) {
+      setError(res.error);
+    } else if (res?.ticketId) {
+      // Find the allocation to get event details
+      const allocId = formData.get("allocation_id");
+      const allocation = allocations.find(a => a.id === allocId);
+      const rawPhone = formData.get("guest_phone") as string;
+      
+      if (allocation && rawPhone) {
+        const phone = `55${rawPhone.replace(/\D/g, '')}`;
+        const event = allocation.events;
+        const link = `${window.location.origin}/ticket/${res.ticketId}`;
+        const message = `🎉 CONVITE ESPECIAL: MINHA FORMATURA! 🎓
+
+É com muita alegria que convido você para a minha cerimônia de colação de grau em [Nome do Curso]. Foram anos de esforço e agora é hora de comemorar essa vitória! 🚀👔
+
+Guarde esta data na agenda:
+🗓️ Quando: ${new Date(event.date).toLocaleDateString()}
+🕗 Horário: ${new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+📍 Onde: ${event.location || '[Inserir Local]'}
+
+👗 Traje: [Inserir Esporte Fino / Gala / Opcional]
+
+Sua presença é fundamental para tornar esse dia inesquecível. ✨Confirme se você vai conseguir ir até o dia [Inserir Data]! 👍
+
+🔗Acesse seu convite pelo link:
+${link}`;
+        
+        const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, '_blank');
+      }
+    }
     setLoading(false);
   };
 
@@ -118,8 +162,17 @@ export function StudentDashboard({
                       <Input id="guest_name" name="guest_name" required placeholder="João da Silva" className="bg-black/40 border-white/10 text-white rounded-xl h-12" />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="guest_email" className="text-zinc-300 ml-1">E-mail do Convidado</Label>
-                      <Input id="guest_email" name="guest_email" type="email" required placeholder="joao@exemplo.com.br" className="bg-black/40 border-white/10 text-white rounded-xl h-12" />
+                      <Label htmlFor="guest_phone" className="text-zinc-300 ml-1">Telefone do Convidado (WhatsApp)</Label>
+                      <Input 
+                        id="guest_phone" 
+                        name="guest_phone" 
+                        type="tel" 
+                        required 
+                        placeholder="(11) 99999-9999" 
+                        onChange={handlePhoneChange}
+                        maxLength={15}
+                        className="bg-black/40 border-white/10 text-white rounded-xl h-12" 
+                      />
                     </div>
                     <Button type="submit" className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold mt-2" disabled={loading}>
                       <Send className="w-4 h-4 mr-2" />
@@ -175,7 +228,7 @@ export function StudentDashboard({
                   {/* Main info — takes all remaining space */}
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-white truncate">{ticket.guest_name}</div>
-                    <div className="text-xs text-zinc-500 truncate mt-0.5">{ticket.guest_email}</div>
+                    <div className="text-xs text-zinc-500 truncate mt-0.5">{ticket.guest_phone || 'Sem telefone'}</div>
                     <div className="text-xs text-zinc-400 truncate mt-0.5">{ticket.events.title}</div>
                   </div>
 

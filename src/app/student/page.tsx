@@ -14,7 +14,7 @@ export default async function StudentPage() {
     .from("allocations")
     .select(`
       id, total_quota, used_quota,
-      events (id, title, date)
+      events (id, title, date, location)
     `)
     .eq("student_email", user.email);
 
@@ -22,7 +22,7 @@ export default async function StudentPage() {
   const { data: tickets } = await supabase
     .from("tickets")
     .select(`
-      id, guest_name, guest_email, status,
+      id, guest_name, guest_phone, status,
       events (title)
     `)
     .eq("allocated_by", user.email)

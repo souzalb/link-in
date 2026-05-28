@@ -11,7 +11,7 @@ export async function issueTicket(formData: FormData) {
 
   const eventId = formData.get("event_id") as string;
   const guestName = formData.get("guest_name") as string;
-  const guestEmail = formData.get("guest_email") as string;
+  const guestPhone = formData.get("guest_phone") as string;
   const allocationId = formData.get("allocation_id") as string;
 
   // Transaction-like logic
@@ -29,15 +29,15 @@ export async function issueTicket(formData: FormData) {
   }
 
   // 2. Insert ticket
-  const { error: ticketError } = await supabase.from("tickets").insert({
+  const { data: newTicket, error: ticketError } = await supabase.from("tickets").insert({
     event_id: eventId,
     allocated_by: user.email,
     guest_name: guestName,
-    guest_email: guestEmail,
+    guest_phone: guestPhone,
     status: "issued",
-  });
+  }).select("id").single();
 
-  if (ticketError) return { error: "Failed to issue ticket." };
+  if (ticketError || !newTicket) return { error: "Failed to issue ticket." };
 
   // 3. Update allocation (bypassing RLS with Service Role Key)
   const { createClient: createSupabaseClient } = await import("@supabase/supabase-js");
@@ -57,7 +57,7 @@ export async function issueTicket(formData: FormData) {
   }
 
   revalidatePath("/student");
-  return { success: true };
+  return { success: true, ticketId: newTicket.id };
 }
 
 export async function revokeTicket(ticketId: string, allocationId: string) {

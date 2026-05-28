@@ -12,7 +12,7 @@ export default async function GuestTicketPage({ params }: { params: Promise<{ id
   const { data: ticket, error } = await adminClient
     .from("tickets")
     .select(`
-      id, guest_name, guest_email, status, qr_token,
+      id, guest_name, guest_phone, status, qr_token,
       events (
         title, date, location, banner_url
       )
