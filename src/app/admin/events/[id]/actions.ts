@@ -16,6 +16,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const date = formData.get("date") as string;
   const location = formData.get("location") as string;
   const estimated_graduates = parseInt(formData.get("estimated_graduates") as string || "0", 10);
+  const invites_per_student = parseInt(formData.get("invites_per_student") as string || "3", 10);
 
   const bannerFile = formData.get("banner_file") as File | null;
   let banner_url: string | undefined = undefined;
@@ -24,13 +25,15 @@ export async function updateEvent(eventId: string, formData: FormData) {
     const fileExt = bannerFile.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    const adminClient = createAdminClient();
+
+    const { error: uploadError } = await adminClient.storage
       .from("banners")
       .upload(fileName, bannerFile);
 
     if (uploadError) return { error: `Upload falhou: ${uploadError.message}` };
 
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = adminClient.storage
       .from("banners")
       .getPublicUrl(fileName);
 
@@ -43,6 +46,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     date: new Date(date).toISOString(),
     location,
     estimated_graduates,
+    invites_per_student,
   };
 
   if (banner_url !== undefined) {
@@ -114,13 +118,13 @@ export async function bulkAllocate(eventId: string, emailsText: string, quota: n
   // Fetch event capacity and current allocations
   const { data: event } = await supabase
     .from("events")
-    .select("estimated_graduates, allocations(student_email, total_quota, used_quota)")
+    .select("estimated_graduates, invites_per_student, allocations(student_email, total_quota, used_quota)")
     .eq("id", eventId)
     .single();
 
   if (!event) return { error: "Evento não encontrado." };
 
-  const maxQuota = event.estimated_graduates * 3;
+  const maxQuota = event.estimated_graduates * (event.invites_per_student || 3);
   const currentAllocations = event.allocations || [];
   const currentTotalQuota = currentAllocations.reduce((acc: number, alloc: any) => acc + alloc.total_quota, 0);
 

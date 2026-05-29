@@ -8,7 +8,7 @@ export default async function EditEventPage({ params }: { params: Promise<{ id: 
 
   const { data: event, error } = await supabase
     .from("events")
-    .select("id, title, description, date, location, estimated_graduates, banner_url")
+    .select("id, title, description, date, location, estimated_graduates, invites_per_student, banner_url")
     .eq("id", id)
     .single();
 

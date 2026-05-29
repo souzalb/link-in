@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { redirect } from "next/navigation";
 
 export async function createEvent(formData: FormData) {
@@ -11,6 +12,7 @@ export async function createEvent(formData: FormData) {
   const date = formData.get("date") as string;
   const location = formData.get("location") as string;
   const estimated_graduates = parseInt(formData.get("estimated_graduates") as string || "0", 10);
+  const invites_per_student = parseInt(formData.get("invites_per_student") as string || "3", 10);
   
   const bannerFile = formData.get("banner_file") as File | null;
   let banner_url = null;
@@ -20,7 +22,9 @@ export async function createEvent(formData: FormData) {
     const fileExt = bannerFile.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const adminClient = createAdminClient();
+
+    const { data: uploadData, error: uploadError } = await adminClient.storage
       .from("banners")
       .upload(fileName, bannerFile);
 
@@ -28,7 +32,7 @@ export async function createEvent(formData: FormData) {
       return { error: `Upload falhou: ${uploadError.message}` };
     }
 
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = adminClient.storage
       .from("banners")
       .getPublicUrl(fileName);
       
@@ -43,6 +47,7 @@ export async function createEvent(formData: FormData) {
       date: new Date(date).toISOString(),
       location,
       estimated_graduates,
+      invites_per_student,
       banner_url,
     },
   ]);

@@ -32,18 +32,15 @@ function parseLocation(location: string) {
   let city = "";
   let state = "";
 
-  if (segments.length === 4) {
-    // Has complement
-    complement = segments[1] ?? "";
-    neighborhood = segments[2]?.split(",")[0]?.trim() ?? "";
-    const cityState = segments[3]?.split(",").map((s) => s.trim()) ?? [];
-    city = cityState[0] ?? "";
-    state = cityState[1] ?? "";
-  } else if (segments.length === 3) {
-    neighborhood = segments[1]?.split(",")[0]?.trim() ?? "";
-    const cityState = segments[2]?.split(",").map((s) => s.trim()) ?? [];
-    city = cityState[0] ?? "";
-    state = cityState[1] ?? "";
+  if (segments.length >= 3) {
+    const isLength4 = segments.length >= 4;
+    complement = isLength4 ? segments[1] : "";
+    const neighborhoodCitySeg = isLength4 ? segments[2] : segments[1];
+    state = isLength4 ? segments[3] : segments[2];
+
+    const ncParts = neighborhoodCitySeg.split(",").map(s => s.trim());
+    neighborhood = ncParts[0] ?? "";
+    city = ncParts[1] ?? "";
   }
 
   return { cep, address: { ...defaults, street, number, complement, neighborhood, city, state } };
@@ -63,6 +60,7 @@ interface EventData {
   date: string;
   location: string | null;
   estimated_graduates: number;
+  invites_per_student?: number;
   banner_url: string | null;
 }
 
@@ -162,9 +160,15 @@ export function EditEventForm({ event }: { event: EventData }) {
                     <Label htmlFor="date" className="text-zinc-300 ml-1">Data e Hora</Label>
                     <Input id="date" name="date" type="datetime-local" required defaultValue={toDateTimeLocal(event.date)} className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="estimated_graduates" className="text-zinc-300 ml-1">Qtd. Formandos</Label>
-                    <Input id="estimated_graduates" name="estimated_graduates" type="number" min="0" required defaultValue={event.estimated_graduates} placeholder="Ex: 50" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="estimated_graduates" className="text-zinc-300 ml-1">Qtd. Formandos</Label>
+                      <Input id="estimated_graduates" name="estimated_graduates" type="number" min="0" required defaultValue={event.estimated_graduates} placeholder="Ex: 50" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invites_per_student" className="text-zinc-300 ml-1">Convites/Formando</Label>
+                      <Input id="invites_per_student" name="invites_per_student" type="number" min="1" required defaultValue={event.invites_per_student ?? 3} placeholder="Ex: 3" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                    </div>
                   </div>
                 </div>
 

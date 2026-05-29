@@ -16,6 +16,11 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
     .from("events")
     .select(`
       *,
+      location,
+      estimated_graduates,
+      invites_per_student,
+      banner_url,
+      created_at,
       allocations (
         total_quota,
         used_quota
@@ -42,6 +47,9 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
   // Calculate stats safely
   const totalAllocatedQuota = (event.allocations || []).reduce((sum: number, alloc: any) => sum + alloc.total_quota, 0);
   const totalIssuedTickets = (event.allocations || []).reduce((sum: number, alloc: any) => sum + alloc.used_quota, 0);
+  
+  const invitesMultiplier = event.invites_per_student || 3;
+  const maxEventQuota = event.estimated_graduates * invitesMultiplier;
   const totalCheckedIn = (event.tickets || []).filter((t: any) => t.status === 'checked_in').length;
 
   const issuePercentage = totalAllocatedQuota > 0 ? Math.round((totalIssuedTickets / totalAllocatedQuota) * 100) : 0;
@@ -122,7 +130,7 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
                 
                 <div className="flex justify-between text-sm mb-2 mt-4 border-t border-white/10 pt-4">
                   <span className="text-zinc-400 flex items-center gap-1"><Ticket className="w-4 h-4" /> Convites Possíveis</span>
-                  <span className="text-white font-medium">{event.estimated_graduates * 3}</span>
+                  <span className="text-white font-medium">{maxEventQuota}</span>
                 </div>
                 <div className="h-1.5 bg-black/40 rounded-full overflow-hidden mt-2">
                   <div className="h-full bg-zinc-500 rounded-full transition-all duration-1000" style={{ width: `100%` }}></div>
@@ -133,15 +141,15 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
               <div>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-zinc-400 flex items-center gap-1"><Users className="w-4 h-4" /> Cotas Atribuídas</span>
-                  <span className="text-white font-medium">{totalAllocatedQuota} / {event.estimated_graduates * 3}</span>
+                  <span className="text-white font-medium">{totalAllocatedQuota} / {maxEventQuota}</span>
                 </div>
                 <div className="h-1.5 bg-black/40 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: event.estimated_graduates > 0 ? `${Math.min(Math.round((totalAllocatedQuota / (event.estimated_graduates * 3)) * 100), 100)}%` : '0%' }}></div>
+                  <div className="h-full bg-blue-500 rounded-full transition-all duration-1000" style={{ width: event.estimated_graduates > 0 ? `${Math.min(Math.round((totalAllocatedQuota / maxEventQuota) * 100), 100)}%` : '0%' }}></div>
                 </div>
                 {/* Saldo de Convites */}
                 <div className="mt-3 flex items-center gap-2 text-sm bg-blue-500/10 text-blue-400 px-3 py-2 rounded-lg border border-blue-500/20">
                   <Ticket className="w-4 h-4" />
-                  <span><strong>{(event.estimated_graduates * 3) - totalAllocatedQuota}</strong> convites disponíveis para distribuir</span>
+                  <span><strong>{maxEventQuota - totalAllocatedQuota}</strong> convites disponíveis para distribuir</span>
                 </div>
               </div>
 

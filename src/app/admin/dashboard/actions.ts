@@ -18,13 +18,13 @@ export async function createAllocation(formData: FormData) {
   // Fetch event capacity and current allocations to calculate limits
   const { data: event } = await supabase
     .from("events")
-    .select("estimated_graduates, allocations(student_email, total_quota, used_quota)")
+    .select("estimated_graduates, invites_per_student, allocations(student_email, total_quota, used_quota)")
     .eq("id", event_id)
     .single();
 
   if (!event) return { error: "Evento não encontrado." };
 
-  const maxQuota = event.estimated_graduates * 3;
+  const maxQuota = event.estimated_graduates * (event.invites_per_student || 3);
   const currentAllocations = event.allocations || [];
   const currentTotalQuota = currentAllocations.reduce((acc: number, alloc: any) => acc + alloc.total_quota, 0);
 

@@ -115,9 +115,15 @@ export default function CreateEventPage() {
                     <Label htmlFor="date" className="text-zinc-300 ml-1">Data e Hora</Label>
                     <Input id="date" name="date" type="datetime-local" required className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="estimated_graduates" className="text-zinc-300 ml-1">Qtd. Formandos</Label>
-                    <Input id="estimated_graduates" name="estimated_graduates" type="number" min="0" required placeholder="Ex: 50" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="estimated_graduates" className="text-zinc-300 ml-1">Qtd. Formandos</Label>
+                      <Input id="estimated_graduates" name="estimated_graduates" type="number" min="0" required placeholder="Ex: 50" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="invites_per_student" className="text-zinc-300 ml-1">Convites/Formando</Label>
+                      <Input id="invites_per_student" name="invites_per_student" type="number" min="1" required defaultValue="3" placeholder="Ex: 3" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                    </div>
                   </div>
                 </div>
 
