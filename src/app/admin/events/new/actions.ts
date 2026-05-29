@@ -13,6 +13,7 @@ export async function createEvent(formData: FormData) {
   const location = formData.get("location") as string;
   const estimated_graduates = parseInt(formData.get("estimated_graduates") as string || "0", 10);
   const invites_per_student = parseInt(formData.get("invites_per_student") as string || "3", 10);
+  const message_template = formData.get("message_template") as string | null;
   
   const bannerFile = formData.get("banner_file") as File | null;
   let banner_url = null;
@@ -48,6 +49,7 @@ export async function createEvent(formData: FormData) {
       location,
       estimated_graduates,
       invites_per_student,
+      message_template,
       banner_url,
     },
   ]);

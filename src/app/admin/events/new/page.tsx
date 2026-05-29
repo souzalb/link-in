@@ -5,6 +5,7 @@ import { createEvent } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
@@ -14,6 +15,7 @@ export default function CreateEventPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [messageTemplate, setMessageTemplate] = useState<string>("");
 
   const [cep, setCep] = useState("");
   const [address, setAddress] = useState({
@@ -76,6 +78,25 @@ export default function CreateEventPage() {
     }
   };
 
+  const insertVariable = (variable: string) => {
+    const el = document.getElementById("message_template") as HTMLTextAreaElement;
+    if (el) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const text = messageTemplate;
+      const before = text.substring(0, start);
+      const after = text.substring(end, text.length);
+      const newValue = before + variable + after;
+      setMessageTemplate(newValue);
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(start + variable.length, start + variable.length);
+      }, 0);
+    } else {
+      setMessageTemplate(prev => prev + variable);
+    }
+  };
+
   return (
     <div className="max-w-5xl space-y-4 pb-4">
       <Link href="/admin/events" className="flex items-center text-sm text-zinc-400 hover:text-white transition-colors w-fit">
@@ -124,6 +145,29 @@ export default function CreateEventPage() {
                       <Label htmlFor="invites_per_student" className="text-zinc-300 ml-1">Convites/Formando</Label>
                       <Input id="invites_per_student" name="invites_per_student" type="number" min="1" required defaultValue="3" placeholder="Ex: 3" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
                     </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="message_template" className="text-zinc-300 ml-1">Mensagem do Convite (WhatsApp)</Label>
+                    <span className="text-xs text-zinc-500">Clique nas tags abaixo para inserir</span>
+                  </div>
+                  <Textarea 
+                    id="message_template" 
+                    name="message_template" 
+                    value={messageTemplate}
+                    onChange={(e) => setMessageTemplate(e.target.value)}
+                    placeholder="Digite a mensagem personalizada..." 
+                    rows={6} 
+                    className="bg-black/40 border-white/10 text-white rounded-xl resize-none" 
+                  />
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{DATA}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Data</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{HORA}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Hora</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{LOCAL}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Local</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{DATA_CONFIRMACAO}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Data Confirmação</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{LINK}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Link do Convite</Button>
                   </div>
                 </div>
 

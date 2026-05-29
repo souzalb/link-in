@@ -5,6 +5,7 @@ import { updateEvent } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Link from "next/link";
@@ -61,6 +62,7 @@ interface EventData {
   location: string | null;
   estimated_graduates: number;
   invites_per_student?: number;
+  message_template?: string | null;
   banner_url: string | null;
 }
 
@@ -68,6 +70,7 @@ export function EditEventForm({ event }: { event: EventData }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(event.banner_url);
+  const [messageTemplate, setMessageTemplate] = useState<string>(event.message_template ?? "");
 
   const parsed = parseLocation(event.location ?? "");
   const [cep, setCep] = useState(parsed.cep);
@@ -120,6 +123,25 @@ export function EditEventForm({ event }: { event: EventData }) {
     if (file) setPreview(URL.createObjectURL(file));
   };
 
+  const insertVariable = (variable: string) => {
+    const el = document.getElementById("message_template") as HTMLTextAreaElement;
+    if (el) {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const text = messageTemplate;
+      const before = text.substring(0, start);
+      const after = text.substring(end, text.length);
+      const newValue = before + variable + after;
+      setMessageTemplate(newValue);
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(start + variable.length, start + variable.length);
+      }, 0);
+    } else {
+      setMessageTemplate(prev => prev + variable);
+    }
+  };
+
   return (
     <div className="max-w-5xl space-y-4 pb-4">
       <Link href={`/admin/events/${event.id}`} className="flex items-center text-sm text-zinc-400 hover:text-white transition-colors w-fit">
@@ -169,6 +191,29 @@ export function EditEventForm({ event }: { event: EventData }) {
                       <Label htmlFor="invites_per_student" className="text-zinc-300 ml-1">Convites/Formando</Label>
                       <Input id="invites_per_student" name="invites_per_student" type="number" min="1" required defaultValue={event.invites_per_student ?? 3} placeholder="Ex: 3" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
                     </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="message_template" className="text-zinc-300 ml-1">Mensagem do Convite (WhatsApp)</Label>
+                    <span className="text-xs text-zinc-500">Clique nas tags abaixo para inserir</span>
+                  </div>
+                  <Textarea 
+                    id="message_template" 
+                    name="message_template" 
+                    value={messageTemplate}
+                    onChange={(e) => setMessageTemplate(e.target.value)}
+                    placeholder="Deixe em branco para usar a mensagem padrão do sistema..." 
+                    rows={6} 
+                    className="bg-black/40 border-white/10 text-white rounded-xl resize-none" 
+                  />
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{DATA}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Data</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{HORA}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Hora</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{LOCAL}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Local</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{DATA_CONFIRMACAO}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Data Confirmação</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => insertVariable("{{LINK}}")} className="h-7 text-xs bg-black/40 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10">Link do Convite</Button>
                   </div>
                 </div>
 

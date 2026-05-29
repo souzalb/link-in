@@ -17,6 +17,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const location = formData.get("location") as string;
   const estimated_graduates = parseInt(formData.get("estimated_graduates") as string || "0", 10);
   const invites_per_student = parseInt(formData.get("invites_per_student") as string || "3", 10);
+  const message_template = formData.get("message_template") as string | null;
 
   const bannerFile = formData.get("banner_file") as File | null;
   let banner_url: string | undefined = undefined;
@@ -47,6 +48,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     location,
     estimated_graduates,
     invites_per_student,
+    message_template,
   };
 
   if (banner_url !== undefined) {

@@ -14,7 +14,7 @@ export default async function StudentPage() {
     .from("allocations")
     .select(`
       id, total_quota, used_quota,
-      events (id, title, date, location)
+      events (id, title, date, location, message_template)
     `)
     .eq("student_email", user.email);
 

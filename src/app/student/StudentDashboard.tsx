@@ -24,7 +24,7 @@ type Allocation = {
   id: string;
   total_quota: number;
   used_quota: number;
-  events: { id: string; title: string; date: string; location?: string };
+  events: { id: string; title: string; date: string; location?: string; message_template?: string | null; };
 };
 
 type Ticket = {
@@ -84,21 +84,28 @@ export function StudentDashboard({
         const confirmDate = new Date(event.date);
         confirmDate.setDate(confirmDate.getDate() - 7);
 
-        const message = `🎉 CONVITE ESPECIAL: MINHA FORMATURA! 🎓
+        const template = event.message_template || `🎉 CONVITE ESPECIAL: MINHA FORMATURA! 🎓
 
 É com muita alegria que convido você para a minha cerimônia de colação de grau. Foram anos de esforço e agora é hora de comemorar essa vitória! 🚀👔
 
 Guarde esta data na agenda:
-🗓️ Quando: ${new Date(event.date).toLocaleDateString()}
-🕗 Horário: ${new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-📍 Onde: ${event.location || '[Inserir Local]'}
+🗓️ Quando: {{DATA}}
+🕗 Horário: {{HORA}}
+📍 Onde: {{LOCAL}}
 
 👗 Traje: Esporte Fino
 
-Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se você vai conseguir ir até o dia ${confirmDate.toLocaleDateString()}! 👍
+Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se você vai conseguir ir até o dia {{DATA_CONFIRMACAO}}! 👍
 
 🔗 Acesse seu convite pelo link:
-${link}`;
+{{LINK}}`;
+
+        const message = template
+          .replace(/\{\{DATA\}\}/g, new Date(event.date).toLocaleDateString())
+          .replace(/\{\{HORA\}\}/g, new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+          .replace(/\{\{LOCAL\}\}/g, event.location || '[Inserir Local]')
+          .replace(/\{\{DATA_CONFIRMACAO\}\}/g, confirmDate.toLocaleDateString())
+          .replace(/\{\{LINK\}\}/g, link);
         
         const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         window.open(waUrl, '_blank');
