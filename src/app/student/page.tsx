@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { StudentDashboard } from "./StudentDashboard";
+import { enforceEventDeadline } from "@/app/actions/retraction";
 
 export default async function StudentPage() {
   const supabase = await createClient();
@@ -9,12 +10,25 @@ export default async function StudentPage() {
     return <div>Not authenticated</div>;
   }
 
-  // Fetch allocations
+  // Get event IDs to enforce deadlines
+  const { data: initialAllocations } = await supabase
+    .from("allocations")
+    .select("event_id")
+    .eq("student_email", user.email);
+
+  if (initialAllocations && initialAllocations.length > 0) {
+    const eventIds = Array.from(new Set(initialAllocations.map(a => a.event_id)));
+    for (const eid of eventIds) {
+      await enforceEventDeadline(eid);
+    }
+  }
+
+  // Fetch final allocations with flags
   const { data: allocations } = await supabase
     .from("allocations")
     .select(`
-      id, total_quota, used_quota,
-      events (id, title, date, location, message_template)
+      id, total_quota, used_quota, retracted_quota, has_seen_welcome, has_seen_deadline_warning,
+      events (id, title, date, location, message_template, rsvp_deadline_days)
     `)
     .eq("student_email", user.email);
 

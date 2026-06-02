@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { issueTicket, revokeTicket, returnQuota } from "./actions";
+import { dismissWelcomeModal, dismissDeadlineModal } from "../actions/modals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,7 +25,10 @@ type Allocation = {
   id: string;
   total_quota: number;
   used_quota: number;
-  events: { id: string; title: string; date: string; location?: string; message_template?: string | null; };
+  retracted_quota?: number;
+  has_seen_welcome?: boolean;
+  has_seen_deadline_warning?: boolean;
+  events: { id: string; title: string; date: string; location?: string; message_template?: string | null; rsvp_deadline_days?: number; };
 };
 
 type Ticket = {
@@ -50,6 +54,38 @@ export function StudentDashboard({
   const [allocationToReturn, setAllocationToReturn] = useState<string | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState<string | null>(null);
+
+  const [activeWelcomeAlloc, setActiveWelcomeAlloc] = useState<Allocation | null>(null);
+  const [activeDeadlineAlloc, setActiveDeadlineAlloc] = useState<Allocation | null>(null);
+
+  useEffect(() => {
+    const welcome = allocations.find(a => a.has_seen_welcome === false);
+    if (welcome) {
+      setActiveWelcomeAlloc(welcome);
+    } else {
+      const deadline = allocations.find(a => a.has_seen_deadline_warning === false && (a.retracted_quota || 0) > 0);
+      if (deadline) {
+        setActiveDeadlineAlloc(deadline);
+      }
+    }
+  }, [allocations]);
+
+  const handleDismissWelcome = async () => {
+    if (!activeWelcomeAlloc) return;
+    setActiveWelcomeAlloc(null);
+    await dismissWelcomeModal(activeWelcomeAlloc.id);
+    
+    const deadline = allocations.find(a => a.has_seen_deadline_warning === false && (a.retracted_quota || 0) > 0);
+    if (deadline && deadline.id !== activeWelcomeAlloc.id) {
+      setActiveDeadlineAlloc(deadline);
+    }
+  };
+
+  const handleDismissDeadline = async () => {
+    if (!activeDeadlineAlloc) return;
+    setActiveDeadlineAlloc(null);
+    await dismissDeadlineModal(activeDeadlineAlloc.id);
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
@@ -82,7 +118,8 @@ export function StudentDashboard({
         const link = `${window.location.origin}/ticket/${res.ticketId}`;
         
         const confirmDate = new Date(event.date);
-        confirmDate.setDate(confirmDate.getDate() - 7);
+        const daysToSubtract = event.rsvp_deadline_days ?? 7;
+        confirmDate.setDate(confirmDate.getDate() - daysToSubtract);
 
         const template = event.message_template || `🎉 CONVITE ESPECIAL: MINHA FORMATURA! 🎓
 
@@ -361,6 +398,48 @@ Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
             <AlertDialogCancel className="h-11 px-6 bg-white/10 hover:bg-white/20 text-white rounded-xl border-0">Fechar</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* Welcome Modal */}
+      <AlertDialog open={!!activeWelcomeAlloc} onOpenChange={(open) => !open && handleDismissWelcome()}>
+        <AlertDialogContent className="glass border-white/10 rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-white">Bem-vindo(a) ao {activeWelcomeAlloc?.events.title}!</AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 space-y-4 pt-2 flex flex-col">
+              <span className="block">Você recebeu {activeWelcomeAlloc?.total_quota} convites para distribuir.</span>
+              <span className="block">
+                <strong>Atenção ao prazo:</strong> Você tem até {activeWelcomeAlloc?.events.rsvp_deadline_days ?? 7} dias antes da data do evento para emitir e enviar os convites aos seus convidados.
+              </span>
+              <span className="block">
+                Os convites não emitidos até a data limite retornarão automaticamente para a organização do evento. Distribua com antecedência!
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="h-11 px-6 bg-primary hover:bg-primary/90 text-white rounded-xl border-0" onClick={handleDismissWelcome}>
+              Entendi
+            </AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Deadline Warning Modal */}
+      <AlertDialog open={!!activeDeadlineAlloc} onOpenChange={(open) => !open && handleDismissDeadline()}>
+        <AlertDialogContent className="glass border-red-500/20 rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl text-white flex items-center gap-2">
+              <XCircle className="w-6 h-6 text-red-500" /> Prazo Encerrado
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-zinc-400 space-y-2 pt-2 flex flex-col">
+              <span className="block">O prazo para emissão de convites do evento <strong>{activeDeadlineAlloc?.events.title}</strong> terminou.</span>
+              <span className="block">Como você não distribuiu todos os seus convites a tempo, <strong>{activeDeadlineAlloc?.retracted_quota} convite(s)</strong> retornaram automaticamente para a organização do evento.</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4">
+            <AlertDialogCancel className="h-11 px-6 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded-xl" onClick={handleDismissDeadline}>
+              Estou Ciente
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

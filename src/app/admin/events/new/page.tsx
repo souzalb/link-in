@@ -122,6 +122,21 @@ export default function CreateEventPage() {
               {/* Left Column */}
               <div className="space-y-4">
                 <div className="space-y-2">
+                  <Label htmlFor="banner_file" className="text-zinc-300 ml-1">Capa do Evento (Foto)</Label>
+                  <div className={`relative flex items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl overflow-hidden transition-colors ${preview ? 'border-primary/50 bg-primary/5' : 'border-white/10 bg-black/20 hover:bg-black/40 hover:border-white/20'}`}>
+                    {preview ? (
+                      <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="flex flex-col items-center text-zinc-500">
+                        <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
+                        <span className="text-sm">Clique para enviar uma imagem</span>
+                      </div>
+                    )}
+                    <input type="file" id="banner_file" name="banner_file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="title" className="text-zinc-300 ml-1">Título do Evento</Label>
                   <Input id="title" name="title" required placeholder="Ex: Formatura Computação 2026" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
                 </div>
@@ -136,15 +151,17 @@ export default function CreateEventPage() {
                     <Label htmlFor="date" className="text-zinc-300 ml-1">Data e Hora</Label>
                     <Input id="date" name="date" type="datetime-local" required className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="estimated_graduates" className="text-zinc-300 ml-1">Qtd. Formandos</Label>
-                      <Input id="estimated_graduates" name="estimated_graduates" type="number" min="0" required placeholder="Ex: 50" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="invites_per_student" className="text-zinc-300 ml-1">Convites/Formando</Label>
-                      <Input id="invites_per_student" name="invites_per_student" type="number" min="1" required defaultValue="3" placeholder="Ex: 3" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="estimated_graduates" className="text-zinc-300 ml-1">Qtd. Formandos</Label>
+                    <Input id="estimated_graduates" name="estimated_graduates" type="number" min="0" required placeholder="Ex: 50" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="invites_per_student" className="text-zinc-300 ml-1">Convites/Formando</Label>
+                    <Input id="invites_per_student" name="invites_per_student" type="number" min="1" required defaultValue="3" placeholder="Ex: 3" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rsvp_deadline_days" className="text-zinc-300 ml-1">Prazo RSVP (dias)</Label>
+                    <Input id="rsvp_deadline_days" name="rsvp_deadline_days" type="number" min="0" required defaultValue="7" placeholder="Ex: 7" className="bg-black/40 border-white/10 text-white h-11 rounded-xl" />
                   </div>
                 </div>
 
@@ -171,20 +188,7 @@ export default function CreateEventPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2 pt-1">
-                  <Label htmlFor="banner_file" className="text-zinc-300 ml-1">Capa do Evento (Foto)</Label>
-                  <div className={`relative flex items-center justify-center w-full h-28 border-2 border-dashed rounded-2xl overflow-hidden transition-colors ${preview ? 'border-primary/50 bg-primary/5' : 'border-white/10 bg-black/20 hover:bg-black/40 hover:border-white/20'}`}>
-                    {preview ? (
-                      <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center text-zinc-500">
-                        <ImageIcon className="w-6 h-6 mb-1 opacity-50" />
-                        <span className="text-xs">Clique para enviar uma imagem</span>
-                      </div>
-                    )}
-                    <input type="file" id="banner_file" name="banner_file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                  </div>
-                </div>
+
               </div>
 
               {/* Right Column */}

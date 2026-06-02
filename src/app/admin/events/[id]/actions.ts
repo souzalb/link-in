@@ -17,6 +17,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const location = formData.get("location") as string;
   const estimated_graduates = parseInt(formData.get("estimated_graduates") as string || "0", 10);
   const invites_per_student = parseInt(formData.get("invites_per_student") as string || "3", 10);
+  const rsvp_deadline_days = parseInt(formData.get("rsvp_deadline_days") as string || "7", 10);
   const message_template = formData.get("message_template") as string | null;
 
   const bannerFile = formData.get("banner_file") as File | null;
@@ -48,6 +49,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
     location,
     estimated_graduates,
     invites_per_student,
+    rsvp_deadline_days,
     message_template,
   };
 
@@ -217,4 +219,95 @@ export async function deleteEvent(eventId: string) {
 
   revalidatePath("/admin/events");
   redirect("/admin/events");
+}
+
+export async function singleAllocate(eventId: string, email: string, cpfPrefix: string, additionalQuota: number) {
+  const supabase = await createClient();
+  const adminClient = createAdminClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!["admin", "super_admin"].includes(roleData?.role ?? "")) return { error: "Not authorized" };
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: `E-mail inválido: "${email}"` };
+  }
+  if (cpfPrefix.replace(/\D/g, "").length !== 6) {
+    return { error: "O prefixo do CPF deve ter exatamente 6 dígitos." };
+  }
+
+  const cleanCpfPrefix = cpfPrefix.replace(/\D/g, "");
+
+  // Fetch event capacity and current allocations
+  const { data: event } = await supabase
+    .from("events")
+    .select("estimated_graduates, invites_per_student, allocations(student_email, total_quota, used_quota)")
+    .eq("id", eventId)
+    .single();
+
+  if (!event) return { error: "Evento não encontrado." };
+
+  const maxQuota = event.estimated_graduates * (event.invites_per_student || 3);
+  const currentAllocations = event.allocations || [];
+  const currentTotalQuota = currentAllocations.reduce((acc: number, alloc: any) => acc + alloc.total_quota, 0);
+
+  const availableQuota = maxQuota - currentTotalQuota;
+  if (additionalQuota > availableQuota) {
+    return { error: `Limite excedido! Só há ${availableQuota} convite(s) disponível(is) no evento.` };
+  }
+
+  // Check if student already has an allocation
+  const existing = currentAllocations.find((a: any) => a.student_email === email);
+  const newTotalQuota = existing ? existing.total_quota + additionalQuota : additionalQuota;
+
+  // Ensure user exists
+  const { error: createError } = await adminClient.auth.admin.createUser({
+    email,
+    password: cleanCpfPrefix,
+    email_confirm: true,
+  });
+
+  if (createError) {
+    const isAlreadyRegistered =
+      createError.message.toLowerCase().includes("already been registered") ||
+      (createError as any).code === "email_exists";
+
+    if (isAlreadyRegistered) {
+      const { data: listData } = await adminClient.auth.admin.listUsers();
+      const existingUser = listData?.users?.find(u => u.email === email);
+      if (existingUser) {
+        await adminClient.auth.admin.updateUserById(existingUser.id, { password: cleanCpfPrefix });
+      }
+    } else {
+      console.error(`Auth error for ${email}:`, createError);
+      return { error: "Erro ao criar/atualizar usuário. Tente novamente." };
+    }
+  }
+
+  // Upsert allocation
+  const { error: allocError } = await supabase
+    .from("allocations")
+    .upsert({
+      event_id: eventId,
+      student_email: email,
+      total_quota: newTotalQuota,
+    }, { onConflict: "event_id,student_email" });
+
+  if (allocError) {
+    console.error(`Failed allocation for ${email}:`, allocError);
+    return { error: "Erro ao alocar convites adicionais." };
+  }
+
+  revalidatePath(`/admin/events/${eventId}`);
+  return {
+    success: true,
+    message: `Foram adicionados ${additionalQuota} convite(s) para ${email} (Total agora: ${newTotalQuota}).`
+  };
 }

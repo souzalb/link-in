@@ -3,14 +3,18 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { BulkAllocationForm } from "./BulkAllocationForm";
+import { SingleAllocationForm } from "./SingleAllocationForm";
 import Link from "next/link";
-import { ArrowLeft, Ticket, Users, Calendar, MapPin, CheckCircle, Pencil } from "lucide-react";
+import { ArrowLeft, Ticket, Users, Calendar, MapPin, CheckCircle, Pencil, UserPlus } from "lucide-react";
 
 import { DeleteEventButton } from "./DeleteEventButton";
+import { enforceEventDeadline } from "@/app/actions/retraction";
 
 export default async function ManageEventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
+
+  await enforceEventDeadline(id);
 
   const { data: event, error } = await supabase
     .from("events")
@@ -112,6 +116,20 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
             </CardHeader>
             <CardContent className="p-6">
               <BulkAllocationForm eventId={event.id} />
+            </CardContent>
+          </Card>
+
+          <Card className="glass border-0 rounded-[2rem] overflow-hidden p-0">
+            <CardHeader className="bg-white/5 border-b border-white/5 p-6">
+              <CardTitle className="text-xl text-white flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-primary" /> Atribuição Adicional (Individual)
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Adicione convites extras para um aluno específico. O aluno receberá os convites imediatamente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <SingleAllocationForm eventId={event.id} />
             </CardContent>
           </Card>
         </div>
