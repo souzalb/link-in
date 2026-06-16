@@ -45,7 +45,7 @@ export async function updateEvent(eventId: string, formData: FormData) {
   const updatePayload: Record<string, unknown> = {
     title,
     description,
-    date: new Date(date).toISOString(),
+    date: new Date(date + "-03:00").toISOString(),
     location,
     estimated_graduates,
     invites_per_student,

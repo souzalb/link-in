@@ -46,7 +46,7 @@ export async function createEvent(formData: FormData) {
     {
       title,
       description,
-      date: new Date(date).toISOString(),
+      date: new Date(date + "-03:00").toISOString(),
       location,
       estimated_graduates,
       invites_per_student,
