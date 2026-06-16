@@ -301,7 +301,7 @@ export function OrganizersClient({ organizers: initial, callerRole }: {
                   <td className="px-6 py-4 text-right text-zinc-500 group-hover:text-zinc-400">
                     <span className="inline-flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />
-                      {new Date(org.created_at).toLocaleDateString("pt-BR")}
+                      {new Date(org.created_at).toLocaleDateString("pt-BR", { timeZone: 'America/Sao_Paulo' })}
                     </span>
                   </td>
                   {isSuperAdmin && (

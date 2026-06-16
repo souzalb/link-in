@@ -94,7 +94,7 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
             <CardHeader className="px-6 pb-4 ">
               <CardTitle className="text-3xl text-white">{event.title}</CardTitle>
               <CardDescription className="flex items-center gap-2 mt-2 text-zinc-400">
-                <Calendar className="w-4 h-4" /> {new Date(event.date).toLocaleString('pt-BR')}
+                <Calendar className="w-4 h-4" /> {new Date(event.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
               </CardDescription>
               {event.location && (
                 <CardDescription className="flex items-center gap-2 text-zinc-400">

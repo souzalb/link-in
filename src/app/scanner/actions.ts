@@ -29,7 +29,7 @@ export async function validateTicket(qrToken: string): Promise<{ success: boolea
 
     // 3. Fraud Prevention: Check if already checked in
     if (ticket.status === "checked_in") {
-      const time = new Date(ticket.checked_in_at).toLocaleString("pt-BR");
+      const time = new Date(ticket.checked_in_at).toLocaleString("pt-BR", { timeZone: 'America/Sao_Paulo' });
       return { success: false, message: `INGRESSO JÁ UTILIZADO em ${time}.` };
     }
 

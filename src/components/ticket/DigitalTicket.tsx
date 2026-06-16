@@ -75,7 +75,7 @@ export function DigitalTicket({ ticket }: DigitalTicketProps) {
             <Calendar className="w-5 h-5 shrink-0 text-primary" />
             <div>
               <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Data e Hora</p>
-              <p className="font-medium text-white">{new Date(ticket.events.date).toLocaleString('pt-BR')}</p>
+              <p className="font-medium text-white">{new Date(ticket.events.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
             </div>
           </div>
 

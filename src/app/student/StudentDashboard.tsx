@@ -138,10 +138,10 @@ Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se
 {{LINK}}`;
 
         const message = template
-          .replace(/\{\{DATA\}\}/g, new Date(event.date).toLocaleDateString())
-          .replace(/\{\{HORA\}\}/g, new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+          .replace(/\{\{DATA\}\}/g, new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }))
+          .replace(/\{\{HORA\}\}/g, new Date(event.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' }))
           .replace(/\{\{LOCAL\}\}/g, event.location || '[Inserir Local]')
-          .replace(/\{\{DATA_CONFIRMACAO\}\}/g, confirmDate.toLocaleDateString())
+          .replace(/\{\{DATA_CONFIRMACAO\}\}/g, confirmDate.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }))
           .replace(/\{\{LINK\}\}/g, link);
         
         const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
@@ -186,7 +186,7 @@ Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se
                   </span>
                 </CardTitle>
                 <div className="flex justify-between items-center mt-2">
-                  <CardDescription className="text-zinc-400">{new Date(alloc.events.date).toLocaleDateString()}</CardDescription>
+                  <CardDescription className="text-zinc-400">{new Date(alloc.events.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</CardDescription>
                   {alloc.used_quota < alloc.total_quota && (
                     <button
                       onClick={() => setAllocationToReturn(alloc.id)}

@@ -229,7 +229,7 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right text-zinc-500 group-hover:text-zinc-400">
-                    {new Date(alloc.created_at).toLocaleDateString()}
+                    {new Date(alloc.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                   </td>
                 </tr>
               ))}

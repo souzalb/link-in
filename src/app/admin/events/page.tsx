@@ -48,7 +48,7 @@ export default async function AdminEventsPage() {
               <CardTitle className="text-xl line-clamp-1 text-white">{event.title}</CardTitle>
               <CardDescription className="flex items-center gap-1.5 mt-2 text-zinc-400">
                 <Calendar className="w-4 h-4" />
-                {new Date(event.date).toLocaleDateString()}
+                {new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
               </CardDescription>
               {event.location && (
                 <CardDescription className="flex items-center gap-1.5 text-zinc-400 mt-1">
