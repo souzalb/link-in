@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { BulkAllocationForm } from "./BulkAllocationForm";
+import { BulkRedistributionForm } from "./BulkRedistributionForm";
 import { SingleAllocationForm } from "./SingleAllocationForm";
 import Link from "next/link";
 import { ArrowLeft, Ticket, Users, Calendar, MapPin, CheckCircle, Pencil, UserPlus } from "lucide-react";
@@ -116,6 +117,20 @@ export default async function ManageEventPage({ params }: { params: Promise<{ id
             </CardHeader>
             <CardContent className="p-6">
               <BulkAllocationForm eventId={event.id} />
+            </CardContent>
+          </Card>
+
+          <Card className="glass border-0 rounded-[2rem] overflow-hidden p-0">
+            <CardHeader className="bg-white/5 border-b border-white/5 p-6">
+              <CardTitle className="text-xl text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" /> Redistribuição em Massa
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Redistribua cotas apenas para alunos já cadastrados informando apenas a lista de e-mails.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <BulkRedistributionForm eventId={event.id} />
             </CardContent>
           </Card>
 

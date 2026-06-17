@@ -11,7 +11,7 @@ export default async function AdminDashboardPage() {
     .order("created_at", { ascending: false });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-[1600px] mx-auto w-full">
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
         <p className="text-zinc-400">Visão geral, distribuição de cotas e métricas do sistema.</p>

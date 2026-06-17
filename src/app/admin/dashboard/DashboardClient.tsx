@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, Ticket, Search, Calendar, Filter, Plus } from "lucide-react";
+import { Users, Ticket, Search, Calendar, Filter, Plus, Download, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function DashboardClient({ events, allocations }: { events: any[]; allocations: any[] }) {
   const [loading, setLoading] = useState(false);
@@ -27,6 +34,7 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
   const [filterEvent, setFilterEvent] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterAvailable, setFilterAvailable] = useState(false);
+  const [filterZeroQuota, setFilterZeroQuota] = useState(false);
 
   const handleSubmit = async (formData: FormData) => {
     setLoading(true);
@@ -54,9 +62,36 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
         matchDate = allocDate.getFullYear() === parseInt(year) && (allocDate.getMonth() + 1) === parseInt(month);
       }
 
-      return matchEmail && matchEvent && matchDate && matchAvailable;
+      const matchZeroQuota = filterZeroQuota ? alloc.total_quota === 0 : true;
+
+      return matchEmail && matchEvent && matchDate && matchAvailable && matchZeroQuota;
     });
-  }, [allocations, searchEmail, filterEvent, filterMonth, filterAvailable]);
+  }, [allocations, searchEmail, filterEvent, filterMonth, filterAvailable, filterZeroQuota]);
+
+  const exportToCsv = () => {
+    const headers = ["Aluno", "Evento", "Cotas Usadas", "Cotas Totais", "Data de Criacao"];
+    const rows = filteredAllocations.map(alloc => [
+      alloc.student_email,
+      alloc.events?.title || "N/A",
+      alloc.used_quota,
+      alloc.total_quota,
+      new Date(alloc.created_at).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(e => e.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `exportacao_cotas_${new Date().getTime()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Metrics calculated from filtered results
   const totalAllocations = filteredAllocations.length;
@@ -103,34 +138,53 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
 
       {/* Main Table Section */}
       <Card className="glass border-0 rounded-[2rem] overflow-hidden flex flex-col min-h-[500px]">
-        <div className="p-6 border-b border-white/5 flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div className="flex-1 flex flex-col md:flex-row items-center gap-4 w-full">
-            <div className="relative w-full md:w-80">
-              <Search className="w-4 h-4 absolute left-4 top-3.5 text-zinc-500" />
-              <Input 
-                placeholder="Buscar por e-mail..." 
-                value={searchEmail}
-                onChange={(e) => setSearchEmail(e.target.value)}
-                className="pl-11 bg-black/40 border-white/10 text-white rounded-xl h-11 w-full"
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-              <select 
-                value={filterEvent}
-                onChange={(e) => setFilterEvent(e.target.value)}
-                className="flex h-11 w-full md:w-48 rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="">Todos os Eventos</option>
-                {events.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
-              </select>
+        <div className="p-6 border-b border-white/5 flex flex-col gap-4 w-full">
+          {/* Row 1: Search, Selects and Status Filters */}
+          <div className="flex flex-col xl:flex-row items-center gap-4 w-full">
+            <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto flex-1">
+              <div className="relative w-full md:w-64 shrink-0">
+                <Search className="w-4 h-4 absolute left-4 top-3.5 text-zinc-500" />
+                <Input 
+                  placeholder="Buscar por e-mail..." 
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  className="pl-11 bg-black/40 border-white/10 text-white rounded-xl h-11 w-full"
+                />
+              </div>
               
+              <Select 
+                value={filterEvent === "" ? "all" : filterEvent} 
+                onValueChange={(val) => setFilterEvent(val === "all" ? "" : val)}
+              >
+                <SelectTrigger className="flex-1 !h-11 min-w-[200px] rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-none">
+                  <SelectValue placeholder="Todos os Eventos">
+                    {filterEvent ? events.find(e => String(e.id) === String(filterEvent))?.title || "Todos os Eventos" : "Todos os Eventos"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-[#18181b] border border-white/10 text-white rounded-xl shadow-2xl">
+                  <SelectItem value="all" className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg m-1 transition-colors">
+                    Todos os Eventos
+                  </SelectItem>
+                  {events.map(e => (
+                    <SelectItem key={e.id} value={String(e.id)} className="focus:bg-white/10 focus:text-white cursor-pointer rounded-lg m-1 transition-colors">
+                      {e.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <div className="relative w-full md:w-48 shrink-0">
+              <Calendar className="w-4 h-4 absolute left-4 top-3.5 text-zinc-500 pointer-events-none" />
               <Input 
                 type="month"
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
-                className="bg-black/40 border-white/10 text-white rounded-xl h-11 w-full md:w-48"
+                className="pl-11 bg-black/40 border-white/10 text-white rounded-xl h-11 w-full [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100 [&::-webkit-calendar-picker-indicator]:cursor-pointer focus:ring-primary/50"
               />
+            </div>
+          </div>
 
+            <div className="flex items-center gap-3 w-full xl:w-auto overflow-x-auto pb-2 xl:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <button
                 type="button"
                 onClick={() => setFilterAvailable((v) => !v)}
@@ -143,17 +197,41 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
                 <Ticket className="w-4 h-4" />
                 Com ingressos disponíveis
               </button>
+
+              <button
+                type="button"
+                onClick={() => setFilterZeroQuota((v) => !v)}
+                className={`inline-flex items-center gap-2 h-11 px-4 rounded-xl border text-sm font-medium transition-all duration-200 shrink-0 ${
+                  filterZeroQuota
+                    ? "bg-red-500/20 border-red-500/50 text-red-400 shadow-[0_0_16px_-4px_rgba(239,68,68,0.4)]"
+                    : "bg-black/40 border-white/10 text-zinc-400 hover:border-white/20 hover:text-zinc-300"
+                }`}
+              >
+                <XCircle className="w-4 h-4" />
+                0 Atribuídos
+              </button>
             </div>
           </div>
 
-          {/* New Allocation Modal Trigger */}
-          <Button 
-            onClick={() => setIsDialogOpen(true)}
-            className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full lg:w-auto shrink-0 shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)]"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Distribuição
-          </Button>
+          {/* Row 2: Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
+            <Button 
+              variant="outline"
+              onClick={exportToCsv}
+              className="h-11 px-4 rounded-xl border-white/10 bg-transparent hover:bg-white/10 text-zinc-300 hover:text-white font-medium shadow-none w-full sm:w-auto shrink-0"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exportar
+            </Button>
+            
+            <Button 
+              onClick={() => setIsDialogOpen(true)}
+              className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full sm:w-auto shrink-0 shadow-[0_0_20px_-5px_rgba(var(--primary),0.5)]"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Nova Distribuição
+            </Button>
+          </div>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="glass border-white/10 rounded-3xl max-w-md p-8">

@@ -311,3 +311,88 @@ export async function singleAllocate(eventId: string, email: string, cpfPrefix: 
     message: `Foram adicionados ${additionalQuota} convite(s) para ${email} (Total agora: ${newTotalQuota}).`
   };
 }
+
+export async function bulkRedistribute(eventId: string, emailsText: string, quota: number) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated" };
+  
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!["admin", "super_admin"].includes(roleData?.role ?? "")) return { error: "Not authorized" };
+
+  const rawLines = emailsText.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+  if (rawLines.length === 0) return { error: "Nenhuma entrada encontrada." };
+
+  const parsed: string[] = [];
+  for (const line of rawLines) {
+    const email = line.toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return { error: `E-mail inválido: "${email}"` };
+    }
+    parsed.push(email);
+  }
+
+  const emails = Array.from(new Set(parsed));
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("estimated_graduates, invites_per_student, allocations(student_email, total_quota, used_quota)")
+    .eq("id", eventId)
+    .single();
+
+  if (!event) return { error: "Evento não encontrado." };
+
+  const maxQuota = event.estimated_graduates * (event.invites_per_student || 3);
+  const currentAllocations = event.allocations || [];
+  const currentTotalQuota = currentAllocations.reduce((acc: number, alloc: any) => acc + alloc.total_quota, 0);
+
+  let netQuotaChange = 0;
+  for (const email of emails) {
+    const existing = currentAllocations.find((a: any) => a.student_email === email);
+    if (existing) {
+      if (quota < existing.used_quota) {
+        return { error: `Não é possível reduzir a cota de ${email} para ${quota}, pois ele já utilizou ${existing.used_quota}.` };
+      }
+      netQuotaChange += (quota - existing.total_quota);
+    } else {
+      netQuotaChange += quota;
+    }
+  }
+
+  const availableQuota = maxQuota - currentTotalQuota;
+  if (netQuotaChange > availableQuota) {
+    return { error: `Limite excedido! Você está tentando alocar mais ${netQuotaChange} convite(s), mas só há ${availableQuota} disponível(is).` };
+  }
+
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (const email of emails) {
+    const { error: allocError } = await supabase
+      .from("allocations")
+      .upsert({
+        event_id: eventId,
+        student_email: email,
+        total_quota: quota,
+      }, { onConflict: "event_id,student_email" });
+
+    if (allocError) {
+      console.error(`Failed allocation for ${email}:`, allocError);
+      errorCount++;
+    } else {
+      successCount++;
+    }
+  }
+
+  revalidatePath(`/admin/events/${eventId}`);
+  return {
+    success: true,
+    message: `${successCount} aluno(s) redistribuído(s) com sucesso.` + (errorCount > 0 ? ` Falhas: ${errorCount}.` : "")
+  };
+}
