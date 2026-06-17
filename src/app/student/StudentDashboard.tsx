@@ -50,7 +50,7 @@ export function StudentDashboard({
   const [error, setError] = useState<string | null>(null);
 
   // Modal states
-  const [ticketToRevoke, setTicketToRevoke] = useState<{ ticketId: string, allocationId: string } | null>(null);
+  const [ticketToRevoke, setTicketToRevoke] = useState<{ ticketId: string, allocationId: string, isDeadlinePassed?: boolean } | null>(null);
   const [allocationToReturn, setAllocationToReturn] = useState<string | null>(null);
   const [errorModal, setErrorModal] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState<string | null>(null);
@@ -320,7 +320,19 @@ Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se
                         </button>
                         <button
                           className="h-7 px-3 text-xs font-medium text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg border border-white/8 hover:border-red-500/20 transition-all"
-                          onClick={() => setTicketToRevoke({ ticketId: ticket.id, allocationId: allocation.id })}
+                          onClick={() => {
+                            const rsvpDeadlineDays = allocation.events.rsvp_deadline_days ?? 7;
+                            const eventDate = new Date(allocation.events.date);
+                            const deadlineDate = new Date(eventDate);
+                            deadlineDate.setDate(deadlineDate.getDate() - rsvpDeadlineDays);
+                            const isDeadlinePassed = new Date() >= deadlineDate;
+                            
+                            setTicketToRevoke({ 
+                              ticketId: ticket.id, 
+                              allocationId: allocation.id,
+                              isDeadlinePassed
+                            });
+                          }}
                         >
                           Cancelar
                         </button>
@@ -339,8 +351,15 @@ Sua presença é fundamental para tornar esse dia inesquecível. ✨ Confirme se
         <AlertDialogContent className="glass border-white/10 rounded-3xl">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-2xl text-white">Cancelar Ingresso</AlertDialogTitle>
-            <AlertDialogDescription className="text-zinc-400">
-              Tem certeza que deseja cancelar este ingresso? O convite será invalidado e o link enviado deixará de funcionar. Sua cota será reembolsada.
+            <AlertDialogDescription className="text-zinc-400 text-left">
+              Tem certeza que deseja cancelar este ingresso? O convite será invalidado e o link enviado deixará de funcionar.
+              {ticketToRevoke?.isDeadlinePassed ? (
+                <span className="block mt-3 text-red-400 font-medium p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                  ⚠️ <strong className="font-semibold">Atenção:</strong> O prazo de envios para este evento já encerrou. Ao cancelar, o convite será devolvido à organização e você não poderá emitir outro no lugar.
+                </span>
+              ) : (
+                " Sua cota será reembolsada e você poderá emitir outro convite."
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-4">
