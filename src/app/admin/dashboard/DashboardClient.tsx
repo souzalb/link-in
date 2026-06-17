@@ -154,7 +154,7 @@ export function DashboardClient({ events, allocations }: { events: any[]; alloca
               
               <Select 
                 value={filterEvent === "" ? "all" : filterEvent} 
-                onValueChange={(val) => setFilterEvent(val === "all" ? "" : val)}
+                onValueChange={(val) => setFilterEvent(val === "all" || !val ? "" : val)}
               >
                 <SelectTrigger className="flex-1 !h-11 min-w-[200px] rounded-xl border border-white/10 bg-black/40 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-none">
                   <SelectValue placeholder="Todos os Eventos">
